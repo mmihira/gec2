@@ -3,17 +3,17 @@ package ssh
 import (
 	"bufio"
 	"fmt"
-	"golang.org/x/crypto/ssh"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"golang.org/x/crypto/ssh"
 	"io"
 	"io/ioutil"
 	"time"
 )
 
 type CheckSSHResult struct {
-	Name string
-	DidConnect bool
-	DidError bool
+	Name        string
+	DidConnect  bool
+	DidError    bool
 	ErrorString string
 }
 
@@ -30,28 +30,7 @@ func KeyFile(file string) ssh.AuthMethod {
 	return ssh.PublicKeys(key)
 }
 
-func CheckSSH (name string, instance *ec2.Instance, resChan chan CheckSSHResult ) {
-	sshConfig := &ssh.ClientConfig{
-		User: "ubuntu",
-		Auth: []ssh.AuthMethod{
-			KeyFile("/home/mihira/.ssh/blocksci/blocksci.pem"),
-		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Timeout:         time.Until(time.Now().Add(time.Second * 3)),
-	}
-
-	client, errs := ssh.Dial("tcp", fmt.Sprintf(
-		"%s:%s",
-		*instance.NetworkInterfaces[0].Association.PublicIp,
-		"22",
-		), sshConfig)
-
-	if errs != nil {
-		resChan <- CheckSSHResult { name,  false, true, fmt.Sprintf("Faled to Dial %s", errs) }
-	} else {
-		resChan <- CheckSSHResult { name, true, false, "" }
-	}
-
+func some(client *ssh.Client) {
 	// Each ClientConn can support multiple interactive sessions,
 	// represented by a Session.
 	session, err := client.NewSession()
@@ -84,4 +63,32 @@ func CheckSSH (name string, instance *ec2.Instance, resChan chan CheckSSHResult 
 	w.Close()
 
 	fmt.Println("now here")
+}
+
+func CheckSSH(
+	keyFilePath string,
+	name string,
+	instance *ec2.Instance,
+	resChan chan CheckSSHResult,
+) {
+	sshConfig := &ssh.ClientConfig{
+		User: "ubuntu",
+		Auth: []ssh.AuthMethod{
+			KeyFile(keyFilePath),
+		},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		Timeout:         time.Until(time.Now().Add(time.Second * 3)),
 	}
+
+	_, errs := ssh.Dial("tcp", fmt.Sprintf(
+		"%s:%s",
+		*instance.NetworkInterfaces[0].Association.PublicIp,
+		"22",
+	), sshConfig)
+
+	if errs != nil {
+		resChan <- CheckSSHResult{name, false, true, fmt.Sprintf("Faled to Dial %s", errs)}
+	} else {
+		resChan <- CheckSSHResult{name, true, false, ""}
+	}
+}
