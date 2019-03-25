@@ -3,6 +3,7 @@ package config
 import (
 	"errors"
 	"github.com/ghodss/yaml"
+	"github.com/aws/aws-sdk-go/aws"
 	"io/ioutil"
 )
 
@@ -17,6 +18,7 @@ type InstanceConfig struct {
 	VolumeMountDir    string   `json:"volume_mount_dir"`
 	AnsibleHostGroups []string `json:"ansible_host_groups"`
 	EnvInjection      []string `json:"env_injection"`
+	SecurityGroups    []string `json:"security_groups"`
 }
 
 type NodeInst map[string]InstanceConfig
@@ -59,6 +61,14 @@ func (s *NodeInst) Config() InstanceConfig {
 		keys = append(keys, k)
 	}
 	return (*s)[keys[0]]
+}
+
+func (s *InstanceConfig) SecurityGroupsForAws() []*string {
+	var ret []*string
+	for _, sg := range s.SecurityGroups {
+		ret = append(ret, aws.String(sg))
+	}
+	return ret
 }
 
 // GetConfig Get the config
