@@ -25,9 +25,8 @@ RUN apk add --no-cache --virtual .build-deps openssl
 RUN apk add --no-cache ca-certificates
 RUN [ ! -e /etc/nsswitch.conf ] && echo 'hosts: files dns' > /etc/nsswitch.conf
 COPY --from=builder /src/main /main
-RUN touch /config.yml
+RUN touch /config.yaml
 RUN touch /credentials
-RUN touch /config.yml
 RUN touch /sshKey
 COPY entrypoint.sh ./entrypoint.sh
 ENTRYPOINT ["./entrypoint.sh"]

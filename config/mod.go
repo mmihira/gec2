@@ -19,12 +19,15 @@ type InstanceConfig struct {
 	AnsibleHostGroups []string `json:"ansible_host_groups"`
 	EnvInjection      []string `json:"env_injection"`
 	SecurityGroups    []string `json:"security_groups"`
+	Roles             []string `json:"roles"`
 }
 
 type NodeInst map[string]InstanceConfig
 type Config struct {
 	Nodes []NodeInst `json:"nodes"`
 }
+
+var ConfigSingleton Config
 
 // Name get the name of a node
 func (s *NodeInst) Name() *string {
@@ -71,13 +74,12 @@ func (s *InstanceConfig) SecurityGroupsForAws() []*string {
 	return ret
 }
 
+func ParseConfig(path string) error {
+	dat, _ := ioutil.ReadFile(path)
+	return yaml.Unmarshal(dat, &ConfigSingleton)
+}
+
 // GetConfig Get the config
 func GetConfig() (Config, error) {
-	dat, _ := ioutil.ReadFile("./config.yaml")
-	var p2 Config
-	marshallError := yaml.Unmarshal(dat, &p2)
-	if marshallError != nil {
-		return Config{}, marshallError
-	}
-	return p2, nil
+	return ConfigSingleton, nil
 }
