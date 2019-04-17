@@ -132,7 +132,9 @@ func GetInstanceByName(ec2svc *ec2.EC2, name string) (*ec2.Instance, error) {
 // are part of the config
 func ProvisionedInstances(ec2svc *ec2.EC2) ([]ProvInst, error) {
 	currentRunningTaggedInstances, err := GetTaggedRunningInstances(ec2svc)
-	if err != nil { return nil, err }
+	if err != nil {
+		return nil, err
+	}
 
 	var ret []ProvInst
 

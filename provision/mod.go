@@ -3,17 +3,17 @@ package provision
 import (
 	"fmt"
 	"gec2/config"
+	"gec2/ec2Query"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	"gec2/ec2Query"
-	"time"
 	log "github.com/sirupsen/logrus"
+	"time"
 )
 
 type Gec2ProvisionResult struct {
 	Reservation *ec2.Reservation
-	Node *config.NodeInst
-	InstanceId string
+	Node        *config.NodeInst
+	InstanceId  string
 }
 
 func provisionNameForNectar(ec2svc *ec2.EC2, name string) (*ec2.Reservation, error) {
@@ -26,7 +26,7 @@ func provisionNameForNectar(ec2svc *ec2.EC2, name string) (*ec2.Reservation, err
 	startinput := &ec2.RunInstancesInput{
 		ImageId:        &config.Ami,
 		InstanceType:   &config.Type,
-		KeyName:        aws.String("orca"),
+		KeyName:        &config.KeyName,
 		MaxCount:       aws.Int64(1),
 		MinCount:       aws.Int64(1),
 		Placement:      &ec2.Placement{AvailabilityZone: &config.Placement},
@@ -59,7 +59,7 @@ func provisionNameForAws(ec2svc *ec2.EC2, name string) (*ec2.Reservation, error)
 		},
 		ImageId:        &config.Ami,
 		InstanceType:   &config.Type,
-		KeyName:        aws.String("blocksci"),
+		KeyName:        &config.KeyName,
 		MaxCount:       aws.Int64(1),
 		MinCount:       aws.Int64(1),
 		Placement:      &ec2.Placement{AvailabilityZone: &config.Placement},
@@ -135,13 +135,15 @@ func EnsureConfigProvisioned(ec2svc *ec2.EC2) error {
 		} else {
 			reservations = append(reservations, Gec2ProvisionResult{
 				Reservation: reservation,
-				Node: &node,
-				InstanceId: *reservation.Instances[0].InstanceId,
+				Node:        &node,
+				InstanceId:  *reservation.Instances[0].InstanceId,
 			})
 		}
 	}
 
-	if hasProvisionError { return fmt.Errorf("Provision error") }
+	if hasProvisionError {
+		return fmt.Errorf("Provision error")
+	}
 
 	// Wait for all the nodes to enter running state
 	for hasProvisioned := false; !hasProvisioned; {
@@ -178,7 +180,9 @@ func EnsureConfigProvisioned(ec2svc *ec2.EC2) error {
 				},
 			}
 			_, err := ec2svc.CreateTags(input)
-			if err != nil { log.Fatal(err.Error()) }
+			if err != nil {
+				log.Fatal(err.Error())
+			}
 		}
 	}
 

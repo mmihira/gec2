@@ -15,10 +15,12 @@ type Role struct {
 }
 
 type Roles map[string]Role
+
 var RolesSingleton Roles
+
 const (
 	ROLE_TYPE_SCRIPT = "script"
-	ROLE_TYPE_COPY = "copy"
+	ROLE_TYPE_COPY   = "copy"
 )
 
 func ParseRoles(path string) error {
@@ -30,4 +32,3 @@ func ParseRoles(path string) error {
 func GetRoleInst() (Roles, error) {
 	return RolesSingleton, nil
 }
-

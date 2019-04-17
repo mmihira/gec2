@@ -1,7 +1,8 @@
 package nodeContext
+
 import (
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"gec2/config"
+	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
 // Get latest node information
@@ -19,5 +20,5 @@ func (n *NodeContext) PublicIpAddress() string {
 	}
 
 	// Otherwise AWS
-	return *n.Instance.NetworkInterfaces[0].Association.PublicIp
+	return *n.Instance.PublicIpAddress
 }

@@ -10,16 +10,17 @@ import (
 
 // InstanceConfig struct to represent an instance config
 type InstanceConfig struct {
-	Ami               string   `json:"ami"`
-	Type              string   `json:"type"`
-	Placement         string   `json:"placement"`
-	AttachVolume      string   `json:"attach_volume"`
-	Volume            string   `json:"volume"`
-	VolumeMountPoint  string   `json:"volume_mount_point"`
-	VolumeMountDir    string   `json:"volume_mount_dir"`
-	EnvInjection      []string `json:"env_injection"`
-	SecurityGroups    []string `json:"security_groups"`
-	Roles             []string `json:"roles"`
+	Ami              string   `json:"ami"`
+	Type             string   `json:"type"`
+	Placement        string   `json:"placement"`
+	AttachVolume     string   `json:"attach_volume"`
+	Volume           string   `json:"volume"`
+	VolumeMountPoint string   `json:"volume_mount_point"`
+	VolumeMountDir   string   `json:"volume_mount_dir"`
+	KeyName          string   `json:"keyname"`
+	EnvInjection     []string `json:"env_injection"`
+	SecurityGroups   []string `json:"security_groups"`
+	Roles            []string `json:"roles"`
 }
 
 type NodeInst map[string]InstanceConfig
