@@ -29,6 +29,7 @@ var ConfigFileName = "config.yaml"
 var RoleFileName = "roles.yaml"
 
 func main() {
+	log.Info("gec2 v0.1.0")
 	// Parse command line options
 	opts.ParseOpts()
 

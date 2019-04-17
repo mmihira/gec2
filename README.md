@@ -53,5 +53,3 @@ region = <>
 `SSH_KEY_PATH` the path to the ssh key for access to the nodes. <br/>
 The use of only one key is supported at this time
 
-
-
