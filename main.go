@@ -4,11 +4,9 @@
 
 // "$GOPATH"/bin/gec2 --credentials="/home/mihira/.ssh/orca/aws_creds" --region=NeCTAR --sshkey=/home/mihira/.ssh/orca/orca.pem --context=/home/mihira/c/gec2/deploy_context
 // "$GOPATH"/bin/gec2 --credentials="/home/mihira/.ssh/aws-credentials" --region=ap-southeast-2 --sshkey=/home/mihira/.ssh/blocksci/blocksci.pem --context=/home/mihira/c/gec2/deploy_context
-
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"gec2/aws"
 	"gec2/config"
@@ -17,10 +15,10 @@ import (
 	"gec2/opts"
 	"gec2/provision"
 	"gec2/roles"
+	"gec2/schemaWriter"
 	gec2ssh "gec2/ssh"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	log "github.com/sirupsen/logrus"
-	"os"
 	"time"
 )
 
@@ -75,19 +73,10 @@ func main() {
 	}
 
 	// Write config information
-	f, err := os.Create(fmt.Sprintf("%s/out.json", opts.Opts.DeployContext))
+	err = schemaWriter.WriteSchema(outputMap)
 	if err != nil {
-		log.Fatalf("Could not create output file: %s", err)
+		log.Fatal(err)
 	}
-	b, err := json.Marshal(outputMap)
-	if err != nil {
-		log.Fatalf("Could not marshal output file: %s", err)
-	}
-	_, err = f.Write(b)
-	if err != nil {
-		log.Fatalf("Could not write output file: %s", err)
-	}
-	f.Close()
 
 	// Wait for SSH access
 	allRunning := false
