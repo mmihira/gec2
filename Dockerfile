@@ -12,8 +12,13 @@ RUN mkdir /src
 COPY go.mod /src
 COPY go.sum /src
 COPY *.go /src/
+COPY aws/* /src/aws/
 COPY config/* /src/config/
 COPY ec2Query/* /src/ec2Query/
+COPY nodeContext/* /src/nodeContext/
+COPY opts/* /src/opts/
+COPY provision/* /src/provision/
+COPY roles/* /src/roles/
 COPY ssh/* /src/ssh/
 
 WORKDIR /src
@@ -28,6 +33,7 @@ COPY --from=builder /src/main /main
 RUN touch /config.yaml
 RUN touch /credentials
 RUN touch /sshKey
+RUN mkdir context
 COPY entrypoint.sh ./entrypoint.sh
 ENTRYPOINT ["./entrypoint.sh"]
 

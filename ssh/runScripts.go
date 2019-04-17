@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 	"io/ioutil"
+	"gec2/opts"
 	"io"
 	"sync"
 	"time"
@@ -86,7 +87,7 @@ func RunScripts(
 
 	for _, scriptPath := range scriptPaths {
 
-		scriptName := fmt.Sprintf("%s/%s", "/home/mihira/c/gec2/deploy_context", scriptPath)
+		scriptName := fmt.Sprintf("%s/%s", opts.Opts.DeployContext, scriptPath)
 
 		fileContents, err := ioutil.ReadFile(scriptName)
 		if err != nil { log.Fatalf("Read script error: %s", err) }
