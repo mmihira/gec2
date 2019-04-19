@@ -85,8 +85,8 @@ func main() {
 	for !allRunning {
 		allRunning = true
 		resChannel := make(chan gec2ssh.CheckSSHResult)
-		for _, node := range runningNodes {
-			go gec2ssh.CheckSSH(opts.Opts.SshKeyPath, &node, resChannel)
+		for inx, _ := range runningNodes {
+			go gec2ssh.CheckSSH(opts.Opts.SshKeyPath, &runningNodes[inx], resChannel)
 		}
 		for range runningNodes {
 			result := <-resChannel
@@ -99,21 +99,11 @@ func main() {
 	// Run the roles
 	// Roles are run sequentially however are executed simulatenously
 	// for each node
-	rolesInst, err := roles.GetRoleInst()
-	if err != nil {
-		log.Fatalf("Could not get roles")
-	}
-	rolesToRun := config.GetAllRoles()
 
+	rolesToRun := config.GetAllRoles()
 	for _, roleName := range rolesToRun {
 		log.Infof("Executing role %s: ", roleName)
-
-		role, roleFound := rolesInst[roleName]
-		if !roleFound {
-			log.Fatalf("Role %s doesn't exist in roles", roleName)
-		}
-
-		roles.ExecuteRole(runningNodes, &role)
+		roles.ExecuteRole(runningNodes, roleName)
 	}
 
 	log.Infof("Instance fully provisioned!")

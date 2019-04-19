@@ -1,6 +1,7 @@
 module gec2
 
 require (
+	github.com/Jeffail/gabs v1.2.0
 	github.com/aws/aws-sdk-go v1.17.4
 	github.com/ghodss/yaml v1.0.0
 	github.com/jessevdk/go-flags v1.4.0

@@ -3,6 +3,7 @@ package schemaWriter
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"gec2/config"
 	"gec2/opts"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -10,7 +11,7 @@ import (
 )
 
 // The name of the file that is written
-var SCHEMA_NAME = "deployed_schema"
+var SCHEMA_NAME = "deployed_schema.json"
 
 // Get the ip address of the instance
 func getIpAddress(inst *ec2.Instance) string {
@@ -43,7 +44,10 @@ func buildSchema(instanceMap map[string]*ec2.Instance) (schema *Schema, err erro
 
 // WriteSchema write the schema to the context dir
 func WriteSchema(instanceMap map[string]*ec2.Instance) error {
-	f, err := os.Create(fmt.Sprintf("%s/%s.json", opts.Opts.DeployContext, SCHEMA_NAME))
+	schemaPath := fmt.Sprintf("%s/%s", opts.Opts.DeployContext, SCHEMA_NAME)
+
+	err := os.Remove(schemaPath)
+	f, err := os.Create(schemaPath)
 	defer f.Close()
 
 	if err != nil {
@@ -65,4 +69,33 @@ func WriteSchema(instanceMap map[string]*ec2.Instance) error {
 	}
 
 	return nil
+}
+
+func ReadSchemaBytes() ([]byte, error) {
+	path := fmt.Sprintf("%s/%s", opts.Opts.DeployContext, SCHEMA_NAME)
+	dat, err := ioutil.ReadFile(path)
+
+	if err != nil {
+		return nil, fmt.Errorf("Error reading schema %s", err)
+	}
+
+	return dat, nil
+}
+
+// ReadSchema Read the schema
+func ReadSchema() (map[string]interface{}, error) {
+	path := fmt.Sprintf("%s/%s", opts.Opts.DeployContext, SCHEMA_NAME)
+	dat, err := ioutil.ReadFile(path)
+
+	if err != nil {
+		return nil, fmt.Errorf("Error reading schema %s", err)
+	}
+
+	var d map[string]interface{}
+	err = json.Unmarshal(dat, &d)
+	if err != nil {
+		return nil, fmt.Errorf("Error decoding schema %s", err)
+	}
+
+	return d, nil
 }

@@ -22,3 +22,14 @@ func (n *NodeContext) PublicIpAddress() string {
 	// Otherwise AWS
 	return *n.Instance.PublicIpAddress
 }
+
+// HasRole  Check if this node has this role
+func (n *NodeContext) HasRole(role string) bool {
+	roles := n.Node.Roles()
+	for _, nodeRole := range  roles {
+		if nodeRole == role {
+				return true
+		}
+  }
+  return false
+}

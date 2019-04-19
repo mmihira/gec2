@@ -3,6 +3,7 @@ package ssh
 import (
 	"bufio"
 	"fmt"
+	"gec2/schemaWriter"
 	"gec2/nodeContext"
 	"github.com/pkg/sftp"
 	log "github.com/sirupsen/logrus"
@@ -14,41 +15,31 @@ import (
 	"time"
 )
 
-// createScriptRemote Copy the script to the server
-func createScriptRemote(client *ssh.Client, fileContents []byte) (bool, error) {
-	sftp, err := sftp.NewClient(client)
-	if err != nil {
-		return false, err
-	}
-	defer sftp.Close()
-
-	f, err := sftp.Create("/tmp/toRun.sh")
-	if err != nil {
-		return false, err
-	}
-
-	if _, err := f.Write(fileContents); err != nil {
-		return false, err
-	}
-	return true, nil
-}
+var TMP_SCRIPT_PARENT = "/tmp"
+var TMP_SCRIPT_PATH = fmt.Sprintf("%s/%s", TMP_SCRIPT_PARENT, "toRun.sh")
 
 // runCommand Runs a command and also prints the output to a screen prefixed
 // by the name of the user
-func runCommand(client *ssh.Client, command string, outputPrefix string) {
+func runCommand(client *ssh.Client, command string, outputPrefix string) error {
 	// Each ClientConn can support multiple interactive sessions,
 	// represented by a Session.
 	session, err := client.NewSession()
 	if err != nil {
 		log.Infof("Failed to create session: %s", err)
+		return err
 	}
 	defer session.Close()
 
 	// Once a Session is created, you can execute a single command on
 	// the remote side using the Run method.
 	r, w := io.Pipe()
+	er, ew := io.Pipe()
+	defer w.Close()
+	defer ew.Close()
 	session.Stdout = w
+	session.Stderr = ew
 
+	// Standard out scanner
 	go func() {
 		scanner := bufio.NewScanner(r)
 		for scanner.Scan() {
@@ -58,14 +49,49 @@ func runCommand(client *ssh.Client, command string, outputPrefix string) {
 		}
 
 		if err := scanner.Err(); err != nil {
-			log.Info(err)
+			log.Errorf("Scanner to run command %s got error %s", command, err)
 		}
+
+		defer r.Close()
+	}()
+
+	// Error scanner
+	go func() {
+		scanner := bufio.NewScanner(er)
+		for scanner.Scan() {
+			log.WithFields(log.Fields{
+				"node": outputPrefix,
+			}).Errorf("%s\n", scanner.Text())
+		}
+
+		if err := scanner.Err(); err != nil {
+			log.Errorf("Scanner to run command %s got error %s", command, err)
+		}
+
+		defer er.Close()
 	}()
 
 	if err := session.Run(command); err != nil {
-		log.Infof("Failed to run: " + err.Error())
+		log.Errorf("Failed to run command %s: %s ", command, err.Error())
+		return fmt.Errorf("Failed to run command %s: %s", command, err)
 	}
-	w.Close()
+	return nil
+}
+
+func CopyFile(client *ssh.Client, fileContents []byte, location string) error {
+	sftp, err := sftp.NewClient(client)
+	if err != nil { return err }
+	defer sftp.Close()
+
+	f, err := sftp.Create(location)
+	if err != nil {
+		return err
+	}
+
+	if _, err := f.Write(fileContents); err != nil {
+		return err
+	}
+	return nil
 }
 
 func RunScripts(
@@ -76,11 +102,14 @@ func RunScripts(
 ) (bool, error) {
 	name := ctx.Name
 
+	keyFile, err := KeyFile(keyFilePath)
+	if err != nil {
+		return false, err
+	}
+
 	sshConfig := &ssh.ClientConfig{
 		User: "ubuntu",
-		Auth: []ssh.AuthMethod{
-			KeyFile(keyFilePath),
-		},
+		Auth: []ssh.AuthMethod{ keyFile, },
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         time.Until(time.Now().Add(time.Second * 3)),
 	}
@@ -100,14 +129,65 @@ func RunScripts(
 
 		if err != nil { return false, err }
 
-		log.Infof("sftp install script for %s", name)
-		createScriptRemote(client, fileContents)
+		// Copy the script
+		log.Infof("Installing script for %s", name)
+		CopyFile(client, fileContents, TMP_SCRIPT_PATH)
+
+		// Copy the schema
+		schema, err := schemaWriter.ReadSchemaBytes()
+		remoteSchemaPath := fmt.Sprintf(fmt.Sprintf("%s/%s", TMP_SCRIPT_PARENT, schemaWriter.SCHEMA_NAME))
+		CopyFile(client, schema, remoteSchemaPath)
 
 		log.Infof("running script %s for %s", scriptPath, name)
 		runCommand(client, "chmod u+x /tmp/toRun.sh", name)
 		runCommand(client, "/tmp/toRun.sh", name)
+
+		// Remove script and schema
+		log.Infof("Cleanup script for %s", name)
+		runCommand(
+			client,
+			fmt.Sprintf("rm %s; rm %s", remoteSchemaPath, TMP_SCRIPT_PATH),
+			name,
+		)
 	}
 
 	barrier.Done()
 	return true, nil
 }
+
+func CopyFileRemote(
+	fileContents []byte,
+	keyFilePath string,
+	destination string,
+	ctx *nodeContext.NodeContext,
+	barrier *sync.WaitGroup,
+) (bool, error) {
+	name := ctx.Name
+
+	keyFile, err := KeyFile(keyFilePath)
+	if err != nil {
+		return false, err
+	}
+
+	sshConfig := &ssh.ClientConfig{
+		User: "ubuntu",
+		Auth: []ssh.AuthMethod{keyFile },
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		Timeout:         time.Until(time.Now().Add(time.Second * 3)),
+	}
+
+	client, err := ssh.Dial("tcp", fmt.Sprintf(
+		"%s:%s",
+		ctx.PublicIpAddress(),
+		"22",
+	), sshConfig)
+
+	if err != nil { return false, err }
+
+	log.Infof("copying file for %s to %s", name, destination)
+	CopyFile(client, fileContents, destination)
+
+	barrier.Done()
+	return true, nil
+}
+

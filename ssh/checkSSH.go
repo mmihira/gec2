@@ -15,17 +15,19 @@ type CheckSSHResult struct {
 	ErrorString string
 }
 
-func KeyFile(file string) ssh.AuthMethod {
+func KeyFile(file string) (ssh.AuthMethod, error) {
 	buffer, err := ioutil.ReadFile(file)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	key, err := ssh.ParsePrivateKey(buffer)
 	if err != nil {
-		return nil
+		return nil, err
+
 	}
-	return ssh.PublicKeys(key)
+
+	return ssh.PublicKeys(key), nil
 }
 
 
@@ -35,11 +37,16 @@ func CheckSSH(
 	ctx *nodeContext.NodeContext,
 	resChan chan CheckSSHResult,
 ) {
+
+	keyFile, err := KeyFile(keyFilePath)
+	if err != nil {
+		resChan <- CheckSSHResult{ctx.Name, false, true, fmt.Sprintf("Faled to Dial %s", err)}
+		return
+	}
+
 	sshConfig := &ssh.ClientConfig{
 		User: "ubuntu",
-		Auth: []ssh.AuthMethod{
-			KeyFile(keyFilePath),
-		},
+		Auth: []ssh.AuthMethod{keyFile },
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         time.Until(time.Now().Add(time.Second * 3)),
 	}

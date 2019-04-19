@@ -5,9 +5,12 @@ import (
 	"io/ioutil"
 )
 
+// Step Generic step type
 type Step struct {
 	StepType string   `json:"stepType"`
 	Scripts  []string `json:"scripts"`
+	Src      string   `json:"src"`
+	Dst      string   `json:"dst"`
 }
 
 type Role struct {
@@ -19,8 +22,9 @@ type Roles map[string]Role
 var RolesSingleton Roles
 
 const (
-	ROLE_TYPE_SCRIPT = "script"
-	ROLE_TYPE_COPY   = "copy"
+	ROLE_TYPE_SCRIPT   = "script"
+	ROLE_TYPE_COPY     = "copy"
+	ROLE_TYPE_TEMPLATE = "template"
 )
 
 func ParseRoles(path string) error {
