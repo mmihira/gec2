@@ -27,6 +27,7 @@ type NodeInst map[string]InstanceConfig
 type Config struct {
 	Provider string     `json:"provider"`
 	Nodes    []NodeInst `json:"nodes"`
+	Roles    []string   `json:"roles"`
 }
 
 const NECTAR_PROVIDER = "Nectar"
@@ -74,6 +75,11 @@ func GetAllRoles() []string {
 	}
 
 	return ret
+}
+
+// RolesToRunInOrder The roles to run in order
+func RolesToRunInOrder() []string {
+	return ConfigSingleton.Roles
 }
 
 // Names Get names in the config

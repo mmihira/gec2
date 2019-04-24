@@ -96,13 +96,11 @@ func main() {
 		time.Sleep(time.Second * 3)
 	}
 
-	// Run the roles
-	// Roles are run sequentially however are executed simulatenously
-	// for each node
-
-	rolesToRun := config.GetAllRoles()
+	rolesToRun := config.RolesToRunInOrder()
 	for _, roleName := range rolesToRun {
-		log.Infof("Executing role %s: ", roleName)
+		log.Info("------------------------------------")
+		log.Infof("----- Executing role %s: ", roleName)
+		log.Info("-----------------------------------")
 		roles.ExecuteRole(runningNodes, roleName)
 	}
 
