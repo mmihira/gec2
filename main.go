@@ -1,5 +1,5 @@
 // VIMTRUN#!
-// "$GOPATH"/bin/gec2 --credentials="/home/mihira/.ssh/aws-credentials" --region=ap-southeast-2 --sshkey=/home/mihira/.ssh/blocksci/blocksci.pem --context=/home/mihira/c/gec2/deploy_context
+// "$GOPATH"/bin/gec2 --credentials="/home/mihira/.ssh/aws-credentials" --region=ap-southeast-2 --sshkey=/home/mihira/.ssh/blocksci/blocksci.pem -v --context=/home/mihira/c/gec2/deploy_context
 // VIMTRUN#!
 
 // "$GOPATH"/bin/gec2 --credentials="/home/mihira/.ssh/orca/aws_creds" --region=NeCTAR --sshkey=/home/mihira/.ssh/orca/orca.pem --context=/home/mihira/c/gec2/deploy_context
@@ -17,7 +17,6 @@ import (
 	"gec2/roles"
 	"gec2/schemaWriter"
 	gec2ssh "gec2/ssh"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	log "github.com/sirupsen/logrus"
 	"time"
 )
@@ -32,6 +31,9 @@ func main() {
 	log.Info("gec2 v0.1.0")
 	// Parse command line options
 	opts.ParseOpts()
+	if opts.Opts.Verbose {
+		log.SetLevel(log.DebugLevel)
+	}
 
 	// Parse the config
 	configPath := fmt.Sprintf("%s/%s", opts.Opts.DeployContext, ConfigFileName)
@@ -53,10 +55,8 @@ func main() {
 
 	// Create node context
 	var runningNodes []nodeContext.NodeContext
-	outputMap := map[string]*ec2.Instance{}
 	for _, name := range config.Names() {
 		nodeInst, err := ec2Query.GetInstanceByName(ec2svc, name)
-		outputMap[name] = nodeInst
 		if err != nil {
 			log.Infof("%s: could not be get. Error: %s \n", name, err)
 		}
@@ -74,7 +74,7 @@ func main() {
 	}
 
 	// Write config information
-	err = schemaWriter.WriteSchema(outputMap)
+	err = schemaWriter.WriteSchema(runningNodes)
 	if err != nil {
 		log.Fatal(err)
 	}

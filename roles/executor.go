@@ -74,11 +74,14 @@ func executeStepTemplate(
 		return fmt.Errorf("Error initialising template %s", err)
 	}
 
+	log.Debugf("Schema was :: %#v", schema)
 	var buff bytes.Buffer
 	err = tpl.Execute(&buff, schema)
 	if err != nil {
 		return fmt.Errorf("Error executing template %s", err)
 	}
+
+	log.Debugf("Template was :: %s", buff.String())
 
 	go gec2ssh.CopyFileRemote(
 		buff.Bytes(),

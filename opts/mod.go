@@ -12,6 +12,7 @@ type AppOpt struct {
 	Region        string `long:"region" description:"Provider Region" required:"true"`
 	Credentials   string `long:"credentials" description:"Credentials path" required:"true"`
 	DeployContext string `long:"context" description:"Deploy context path" required:"true"`
+	Verbose       bool   `short:"v" long:"verbose" description:"Verbox output" required:"false"`
 }
 
 var Opts AppOpt

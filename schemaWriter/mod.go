@@ -6,44 +6,46 @@ import (
 	"io/ioutil"
 	"gec2/config"
 	"gec2/opts"
-	"github.com/aws/aws-sdk-go/service/ec2"
+	"gec2/nodeContext"
 	"os"
 )
 
 // The name of the file that is written
 var SCHEMA_NAME = "deployed_schema.json"
 
-// Get the ip address of the instance
-func getIpAddress(inst *ec2.Instance) string {
-	if config.ProviderIsNectar() {
-		return *inst.PrivateIpAddress
-	} else {
-		return *inst.PublicIpAddress
-	}
-}
-
 // Build the schema
-func buildSchema(instanceMap map[string]*ec2.Instance) (schema *Schema, err error) {
-	schema = &Schema{}
-	for name, instance := range instanceMap {
-		node, err := config.GetNode(name)
-		if err != nil {
-			return nil, err
+func buildSchema(instances []nodeContext.NodeContext) (schema *Schema, err error) {
+	schema = &Schema{
+		Nodes: map[string]NodeSchema{},
+		WithRoles: map[string][]NodeSchema{},
+	}
+
+	for _, ctxt := range instances {
+		(*schema).Nodes[ctxt.Name] = NodeSchema{
+			Name:    	ctxt.Name,
+			KeyName: 	ctxt.Node[ctxt.Name].KeyName,
+			Roles:   	ctxt.Node[ctxt.Name].Roles,
+			Ip:      	ctxt.PublicIpAddress(),
+			PrivateIp: ctxt.PrivateIpAddress(),
+		}
+	}
+
+	for _, role := range config.GetAllRoles() {
+		nodesInRole := []NodeSchema{}
+		for _, ctxt := range instances {
+			if ctxt.HasRole(role) {
+				nodesInRole = append(nodesInRole, (*schema).Nodes[ctxt.Name])
+			}
 		}
 
-		(*schema)[name] = NodeSchema{
-			Name:    name,
-			KeyName: node[name].KeyName,
-			Roles:   node[name].Roles,
-			Ip:      getIpAddress(instance),
-		}
+		(*schema).WithRoles[role] = nodesInRole
 	}
 
 	return
 }
 
 // WriteSchema write the schema to the context dir
-func WriteSchema(instanceMap map[string]*ec2.Instance) error {
+func WriteSchema(instances []nodeContext.NodeContext) error {
 	schemaPath := fmt.Sprintf("%s/%s", opts.Opts.DeployContext, SCHEMA_NAME)
 
 	err := os.Remove(schemaPath)
@@ -54,7 +56,7 @@ func WriteSchema(instanceMap map[string]*ec2.Instance) error {
 		return fmt.Errorf("Could not create output file: %s", err)
 	}
 
-	schema, err := buildSchema(instanceMap)
+	schema, err := buildSchema(instances)
 	if err != nil {
 		return fmt.Errorf("Could not build schema: %s", err)
 	}

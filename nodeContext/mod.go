@@ -23,6 +23,11 @@ func (n *NodeContext) PublicIpAddress() string {
 	return *n.Instance.PublicIpAddress
 }
 
+// PrivateIpAddress The PrivateIpAddress
+func (n *NodeContext) PrivateIpAddress() string {
+	return *n.Instance.PrivateIpAddress
+}
+
 // HasRole  Check if this node has this role
 func (n *NodeContext) HasRole(role string) bool {
 	roles := n.Node.Roles()
