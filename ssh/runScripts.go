@@ -6,7 +6,8 @@ import (
 	"gec2/schemaWriter"
 	"gec2/nodeContext"
 	"github.com/pkg/sftp"
-	log "github.com/sirupsen/logrus"
+	"gec2/log"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 	"io/ioutil"
 	"gec2/opts"
@@ -43,7 +44,7 @@ func runCommand(client *ssh.Client, command string, outputPrefix string) error {
 	go func() {
 		scanner := bufio.NewScanner(r)
 		for scanner.Scan() {
-			log.WithFields(log.Fields{
+			log.WithFields(logrus.Fields{
 				"node": outputPrefix,
 			}).Infof("%s\n", scanner.Text())
 		}
@@ -59,7 +60,7 @@ func runCommand(client *ssh.Client, command string, outputPrefix string) error {
 	go func() {
 		scanner := bufio.NewScanner(er)
 		for scanner.Scan() {
-			log.WithFields(log.Fields{
+			log.WithFields(logrus.Fields{
 				"node": outputPrefix,
 			}).Errorf("%s\n", scanner.Text())
 		}
@@ -190,4 +191,3 @@ func CopyFileRemote(
 	barrier.Done()
 	return true, nil
 }
-

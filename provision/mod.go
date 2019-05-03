@@ -6,7 +6,7 @@ import (
 	"gec2/ec2Query"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	log "github.com/sirupsen/logrus"
+	"gec2/log"
 	"time"
 )
 

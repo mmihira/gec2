@@ -2,7 +2,7 @@ package opts
 
 import (
 	flags "github.com/jessevdk/go-flags"
-	log "github.com/sirupsen/logrus"
+	"fmt"
 	"os"
 )
 
@@ -17,9 +17,11 @@ type AppOpt struct {
 
 var Opts AppOpt
 
-func ParseOpts() {
+func ParseOpts() error {
 	_, err := flags.ParseArgs(&Opts, os.Args)
 	if err != nil {
-		log.Fatalf("Parsing args got error: %s", err)
+		return fmt.Errorf("Parsing args got error: %s", err)
 	}
+
+	return nil
 }

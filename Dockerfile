@@ -19,6 +19,7 @@ COPY nodeContext/* /src/nodeContext/
 COPY opts/* /src/opts/
 COPY provision/* /src/provision/
 COPY roles/* /src/roles/
+COPY log/* /src/log/
 COPY schemaWriter/* /src/schemaWriter/
 COPY ssh/* /src/ssh/
 

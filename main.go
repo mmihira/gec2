@@ -17,7 +17,8 @@ import (
 	"gec2/roles"
 	"gec2/schemaWriter"
 	gec2ssh "gec2/ssh"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
+	"gec2/log"
 	"time"
 )
 
@@ -28,16 +29,22 @@ var ConfigFileName = "config.yaml"
 var RoleFileName = "roles.yaml"
 
 func main() {
-	log.Info("gec2 v0.1.0")
+	err := opts.ParseOpts()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	log.Setup()
+	log.Info("Running gec2 v0.1.0")
 	// Parse command line options
-	opts.ParseOpts()
 	if opts.Opts.Verbose {
-		log.SetLevel(log.DebugLevel)
+		log.SetLevel(logrus.DebugLevel)
 	}
 
 	// Parse the config
 	configPath := fmt.Sprintf("%s/%s", opts.Opts.DeployContext, ConfigFileName)
-	err := config.ParseConfig(configPath)
+	err = config.ParseConfig(configPath)
 	if err != nil {
 		log.Fatalf("Parsing config got error: %s", err)
 	}

@@ -7,7 +7,7 @@ import (
 	"gec2/opts"
 	"gec2/schemaWriter"
 	gec2ssh "gec2/ssh"
-	log "github.com/sirupsen/logrus"
+	"gec2/log"
 	"io/ioutil"
 	"os"
 	"sync"
@@ -96,7 +96,6 @@ func executeStepTemplate(
 
 // ExecuteRole
 func ExecuteRole(nodes []nodeContext.NodeContext, roleName string) {
-
 	role, roleFound := RolesSingleton[roleName]
 	if !roleFound {
 		log.Fatalf("Role %s doesn't exist in roles", roleName)
