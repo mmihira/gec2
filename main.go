@@ -24,6 +24,7 @@ import (
 
 // The config file should always be names config.yaml
 var ConfigFileName = "config.yaml"
+var SecretsFileName = "secrets.json"
 
 // The roles file should always be names roles.yaml
 var RoleFileName = "roles.yaml"
@@ -47,6 +48,17 @@ func main() {
 	err = config.ParseConfig(configPath)
 	if err != nil {
 		log.Fatalf("Parsing config got error: %s", err)
+	} else {
+		log.Info("Config loaded from %s", configPath)
+	}
+
+	// Parse the secrets config
+	secretsPath := fmt.Sprintf("%s/%s", opts.Opts.DeployContext, SecretsFileName)
+	er := config.ParseSecrets(secretsPath)
+	if er != nil {
+		log.Infof("Could not parse secrets : %s\n", err)
+	} else {
+		log.Info("Secrets loaded from %s", secretsPath)
 	}
 
 	// Parse the roles

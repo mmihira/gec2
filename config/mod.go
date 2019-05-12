@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/ghodss/yaml"
+	"github.com/Jeffail/gabs"
 	"io/ioutil"
 )
 
@@ -35,6 +36,10 @@ const AWS_PROVIDER = "AWS"
 
 // ConfigSingleton The config singleton
 var ConfigSingleton Config
+
+const SECRETS_FILE = "secrets.yaml"
+var secretsMap *gabs.Container
+var isSecretsValid bool
 
 // ProviderIsNectar
 func ProviderIsNectar() bool {
@@ -134,6 +139,33 @@ func ParseConfig(path string) error {
 	}
 
 	return nil
+}
+
+func ParseSecrets(path string) error {
+	secretsDat, readErr:= ioutil.ReadFile(path)
+
+	if readErr != nil {
+		return readErr
+	}
+
+	gabsC, secretsErr := gabs.ParseJSON(secretsDat)
+	secretsMap = gabsC
+
+	if secretsErr == nil {
+		isSecretsValid = true
+	} else {
+		return secretsErr
+	}
+
+	return nil
+}
+
+func SecretsMapAsJsonString() string {
+	return secretsMap.String()
+}
+
+func IsSecrestValid() bool {
+	return isSecretsValid
 }
 
 // GetConfig Get the config

@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"gec2/schemaWriter"
 	"gec2/nodeContext"
+	"gec2/config"
 	"github.com/pkg/sftp"
 	"gec2/log"
 	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh"
 	"io/ioutil"
 	"gec2/opts"
+	"strings"
 	"io"
 	"sync"
 	"time"
@@ -141,7 +143,11 @@ func RunScripts(
 
 		log.Infof("running script %s for %s", scriptPath, name)
 		runCommand(client, "chmod u+x /tmp/toRun.sh", name)
-		runCommand(client, "/tmp/toRun.sh", name)
+		runCommandString := fmt.Sprintf(
+			"GECSECRETS='%s' /tmp/toRun.sh",
+			strings.TrimSpace(config.SecretsMapAsJsonString()),
+		)
+		runCommand(client, runCommandString, name)
 
 		// Remove script and schema
 		log.Infof("Cleanup script for %s", name)
