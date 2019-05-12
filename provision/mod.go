@@ -51,7 +51,7 @@ func provisionNameForAws(ec2svc *ec2.EC2, name string) (*ec2.Reservation, error)
 	startinput := &ec2.RunInstancesInput{
 		BlockDeviceMappings: []*ec2.BlockDeviceMapping{
 			{
-				DeviceName: aws.String("/dev/sdh"),
+				DeviceName: aws.String("/dev/sda1"),
 				Ebs: &ec2.EbsBlockDevice{
 					VolumeSize: aws.Int64(100),
 				},
