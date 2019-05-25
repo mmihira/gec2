@@ -7,6 +7,7 @@ import (
 	"gec2/nodeContext"
 	"gec2/schemaWriter"
 	gec2ssh "gec2/ssh"
+	"gec2/opts"
 	"gec2/log"
 	"io/ioutil"
 	"os"
@@ -109,7 +110,7 @@ func ExecuteRole(nodes []nodeContext.NodeContext, roleName string) {
 			var wg sync.WaitGroup
 
 			for nodeInx, node := range nodes {
-				if node.HasRole(roleName) {
+				if node.HasRole(roleName) || opts.HasSpecifiedNode(node.Name) {
 					wg.Add(1)
 					go executeStepCopy(viper.GetString("SSH_KEY_PATH"), &nodes[nodeInx], &wg, &step)
 				}
@@ -123,7 +124,7 @@ func ExecuteRole(nodes []nodeContext.NodeContext, roleName string) {
 			var wg sync.WaitGroup
 
 			for nodeInx, node := range nodes {
-				if node.HasRole(roleName) {
+				if node.HasRole(roleName) || opts.HasSpecifiedNode(node.Name) {
 					wg.Add(1)
 					go gec2ssh.RunScripts(step.Scripts, viper.GetString("SSH_KEY_PATH"), &nodes[nodeInx], &wg)
 				}
@@ -136,7 +137,7 @@ func ExecuteRole(nodes []nodeContext.NodeContext, roleName string) {
 			var wg sync.WaitGroup
 
 			for nodeInx, node := range nodes {
-				if node.HasRole(roleName) {
+				if node.HasRole(roleName) || opts.HasSpecifiedNode(node.Name) {
 					wg.Add(1)
 					go executeStepTemplate(viper.GetString("SSH_KEY_PATH"), &nodes[nodeInx], &wg, &step)
 				}

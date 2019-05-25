@@ -1,19 +1,72 @@
 package opts
 
 import (
+	"fmt"
 	flags "github.com/jessevdk/go-flags"
 	"github.com/spf13/viper"
-	"fmt"
 	"os"
 )
 
 // Command line options
 type AppOpt struct {
-	Verbose       bool   `short:"v" long:"verbose" description:"Verbox output" required:"false"`
-	ConfigPath 		string `long:"configpath" description:"Config file path"`
+	Verbose    bool     `short:"v" long:"verbose" description:"Verbox output" required:"false"`
+	Stages     []string `short:"s" long:"stages" descrption:"Stages to run"`
+	Roles      []string `short:"r" long:"roles" description:"Roles to run"`
+	Nodes      []string `short:"n" long:"nodes" description:"Nodes to run"`
+	ConfigPath string   `long:"configpath" description:"Config file path"`
 }
 
 var Opts AppOpt
+
+const (
+	STAGE_PROVISION = "provision"
+	STAGE_SSH       = "ssh"
+	STAGE_CMD       = "cmd"
+)
+
+func DoStageAll () bool {
+	return len(Opts.Stages) == 0
+}
+
+func StageProvision() bool {
+	for _, s := range Opts.Stages {
+		if s == STAGE_PROVISION {
+			return true
+		}
+	}
+	return false
+}
+
+func StageSSHCheck() bool {
+	for _, s := range Opts.Stages {
+		if s ==  STAGE_SSH {
+			return true
+		}
+	}
+	return false
+}
+
+func StageCMD() bool {
+	for _, s := range Opts.Stages {
+		if s == STAGE_CMD {
+			return true
+		}
+	}
+	return false
+}
+
+func RolesToRun() []string {
+	return Opts.Roles
+}
+
+func HasSpecifiedNode(node string) bool {
+	for _, n := range Opts.Nodes {
+		if n == node {
+			return true
+		}
+	}
+	return false
+}
 
 func ParseOpts() error {
 	_, err := flags.ParseArgs(&Opts, os.Args)

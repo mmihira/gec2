@@ -1,5 +1,5 @@
 // VIMTRUN#!
-// CREDENTIALS_FILE_PATH="/home/mihira/.ssh/aws-credentials" EC2_REGION="ap-southeast-2" DEPLOY_CONTEXT_PATH="/home/mihira/c/gec2/deploy_context" SSH_KEY_PATH=/home/mihira/.ssh/blocksci/blocksci.pem  "$GOPATH"/bin/gec2 2  -v
+// CREDENTIALS_FILE_PATH="/home/mihira/.ssh/aws-credentials" EC2_REGION="ap-southeast-2" DEPLOY_CONTEXT_PATH="/home/mihira/c/gec2/deploy_context" SSH_KEY_PATH=/home/mihira/.ssh/blocksci/blocksci.pem  "$GOPATH"/bin/gec2 2  -v -r echo -n appUi -s cmd -n minio
 // VIMTRUN#!
 package main
 
@@ -67,8 +67,10 @@ func main() {
 	}
 	ec2svc, _ := aws.ConnectAWS()
 
-	// Provision nodes
-	provision.EnsureConfigProvisioned(ec2svc)
+	if opts.DoStageAll() || opts.StageProvision() {
+		// Provision nodes
+		provision.EnsureConfigProvisioned(ec2svc)
+	}
 
 	// Create node context
 	var runningNodes []nodeContext.NodeContext
@@ -96,29 +98,39 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Wait for SSH access
-	allRunning := false
-	log.Infof("Waiting for ssh availability...")
-	for !allRunning {
-		allRunning = true
-		resChannel := make(chan gec2ssh.CheckSSHResult)
-		for inx, _ := range runningNodes {
-			go gec2ssh.CheckSSH(viper.GetString("SSH_KEY_PATH"), &runningNodes[inx], resChannel)
+	if opts.DoStageAll() || opts.StageSSHCheck() {
+		// Wait for SSH access
+		allRunning := false
+		log.Infof("Waiting for ssh availability...")
+		for !allRunning {
+			allRunning = true
+			resChannel := make(chan gec2ssh.CheckSSHResult)
+			for inx, _ := range runningNodes {
+				go gec2ssh.CheckSSH(viper.GetString("SSH_KEY_PATH"), &runningNodes[inx], resChannel)
+			}
+			for range runningNodes {
+				result := <-resChannel
+				log.Infof("ssh status for %s: %v", result.Name, result.DidConnect)
+				allRunning = allRunning && result.DidConnect
+			}
+			time.Sleep(time.Second * 3)
 		}
-		for range runningNodes {
-			result := <-resChannel
-			log.Infof("ssh status for %s: %v", result.Name, result.DidConnect)
-			allRunning = allRunning && result.DidConnect
-		}
-		time.Sleep(time.Second * 3)
 	}
 
-	rolesToRun := config.RolesToRunInOrder()
-	for _, roleName := range rolesToRun {
-		log.Info("------------------------------------")
-		log.Infof("----- Executing role %s: ", roleName)
-		log.Info("-----------------------------------")
-		roles.ExecuteRole(runningNodes, roleName)
+	if opts.DoStageAll() || opts.StageCMD() {
+		rolesToRun := []string{}
+		if len(opts.RolesToRun()) > 0 {
+			rolesToRun = opts.RolesToRun()
+		} else {
+			rolesToRun = config.RolesToRunInOrder()
+		}
+
+		for _, roleName := range rolesToRun {
+			log.Info("------------------------------------")
+			log.Infof("----- Executing role %s: ", roleName)
+			log.Info("-----------------------------------")
+			roles.ExecuteRole(runningNodes, roleName)
+		}
 	}
 
 	log.Infof("Instance fully provisioned!")
