@@ -1,11 +1,11 @@
 package schemaWriter
 
 import (
+	"github.com/spf13/viper"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"gec2/config"
-	"gec2/opts"
 	"gec2/nodeContext"
 	"os"
 )
@@ -46,7 +46,7 @@ func buildSchema(instances []nodeContext.NodeContext) (schema *Schema, err error
 
 // WriteSchema write the schema to the context dir
 func WriteSchema(instances []nodeContext.NodeContext) error {
-	schemaPath := fmt.Sprintf("%s/%s", opts.Opts.DeployContext, SCHEMA_NAME)
+	schemaPath := fmt.Sprintf("%s/%s", viper.GetString("DEPLOY_CONTEXT_PATH"), SCHEMA_NAME)
 
 	err := os.Remove(schemaPath)
 	f, err := os.Create(schemaPath)
@@ -74,7 +74,7 @@ func WriteSchema(instances []nodeContext.NodeContext) error {
 }
 
 func ReadSchemaBytes() ([]byte, error) {
-	path := fmt.Sprintf("%s/%s", opts.Opts.DeployContext, SCHEMA_NAME)
+	path := fmt.Sprintf("%s/%s", viper.GetString("DEPLOY_CONTEXT_PATH"), SCHEMA_NAME)
 	dat, err := ioutil.ReadFile(path)
 
 	if err != nil {
@@ -86,7 +86,7 @@ func ReadSchemaBytes() ([]byte, error) {
 
 // ReadSchema Read the schema
 func ReadSchema() (map[string]interface{}, error) {
-	path := fmt.Sprintf("%s/%s", opts.Opts.DeployContext, SCHEMA_NAME)
+	path := fmt.Sprintf("%s/%s", viper.GetString("DEPLOY_CONTEXT_PATH"), SCHEMA_NAME)
 	dat, err := ioutil.ReadFile(path)
 
 	if err != nil {

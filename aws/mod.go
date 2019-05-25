@@ -1,9 +1,9 @@
 package aws
 
 import (
+	"github.com/spf13/viper"
 	"fmt"
 	"gec2/config"
-	"gec2/opts"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -15,10 +15,10 @@ func ConnectAWS() (*ec2.EC2, error) {
 	// Get an aws Ec2 session assuming Nectar
 	if config.ProviderIsNectar() {
 		s := session.Options{
-			SharedConfigFiles: []string{opts.Opts.Credentials},
+			SharedConfigFiles: []string{viper.GetString("CREDENTIALS_FILE_PATH")},
 			Config: aws.Config{
 				CredentialsChainVerboseErrors: aws.Bool(true),
-				Region:                        aws.String(opts.Opts.Region),
+				Region:                        aws.String(viper.GetString("EC2_REGION")),
 				Endpoint:                      aws.String("nova.rc.nectar.org.au:8773/services/Cloud"),
 			},
 		}
@@ -33,10 +33,10 @@ func ConnectAWS() (*ec2.EC2, error) {
 
 	// Get an aws Ec2 session assuming AWS
 	s := session.Options{
-		SharedConfigFiles: []string{opts.Opts.Credentials},
+		SharedConfigFiles: []string{viper.GetString("CREDENTIALS_FILE_PATH")},
 		Config: aws.Config{
 			CredentialsChainVerboseErrors: aws.Bool(true),
-			Region:                        aws.String(opts.Opts.Region),
+			Region:                        aws.String(viper.GetString("EC2_REGION")),
 		},
 	}
 

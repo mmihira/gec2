@@ -36,6 +36,4 @@ RUN touch /config.yaml
 RUN touch /credentials
 RUN touch /sshKey
 RUN mkdir context
-COPY entrypoint.sh ./entrypoint.sh
-ENTRYPOINT ["./entrypoint.sh"]
-
+ENTRYPOINT ["./main"]

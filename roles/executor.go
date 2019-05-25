@@ -1,10 +1,10 @@
 package roles
 
 import (
+	"github.com/spf13/viper"
 	"bytes"
 	"fmt"
 	"gec2/nodeContext"
-	"gec2/opts"
 	"gec2/schemaWriter"
 	gec2ssh "gec2/ssh"
 	"gec2/log"
@@ -26,7 +26,7 @@ func executeStepCopy(
 	barrier.Add(1)
 	defer barrier.Done()
 
-	srcPath := fmt.Sprintf("%s/%s", opts.Opts.DeployContext, step.Src)
+	srcPath := fmt.Sprintf("%s/%s", viper.GetString("DEPLOY_CONTEXT_PATH"), step.Src)
 
 	if _, err := os.Stat(srcPath); os.IsNotExist(err) {
 		log.Errorf("%s", err)
@@ -57,7 +57,7 @@ func executeStepTemplate(
 	barrier *sync.WaitGroup,
 	step *Step,
 ) error {
-	tplPath := fmt.Sprintf("%s/%s", opts.Opts.DeployContext, step.Src)
+	tplPath := fmt.Sprintf("%s/%s", viper.GetString("DEPLOY_CONTEXT_PATH"), step.Src)
 
 	dat, err := ioutil.ReadFile(tplPath)
 	if err != nil {
@@ -111,7 +111,7 @@ func ExecuteRole(nodes []nodeContext.NodeContext, roleName string) {
 			for nodeInx, node := range nodes {
 				if node.HasRole(roleName) {
 					wg.Add(1)
-					go executeStepCopy(opts.Opts.SshKeyPath, &nodes[nodeInx], &wg, &step)
+					go executeStepCopy(viper.GetString("SSH_KEY_PATH"), &nodes[nodeInx], &wg, &step)
 				}
 			}
 
@@ -125,7 +125,7 @@ func ExecuteRole(nodes []nodeContext.NodeContext, roleName string) {
 			for nodeInx, node := range nodes {
 				if node.HasRole(roleName) {
 					wg.Add(1)
-					go gec2ssh.RunScripts(step.Scripts, opts.Opts.SshKeyPath, &nodes[nodeInx], &wg)
+					go gec2ssh.RunScripts(step.Scripts, viper.GetString("SSH_KEY_PATH"), &nodes[nodeInx], &wg)
 				}
 			}
 
@@ -138,7 +138,7 @@ func ExecuteRole(nodes []nodeContext.NodeContext, roleName string) {
 			for nodeInx, node := range nodes {
 				if node.HasRole(roleName) {
 					wg.Add(1)
-					go executeStepTemplate(opts.Opts.SshKeyPath, &nodes[nodeInx], &wg, &step)
+					go executeStepTemplate(viper.GetString("SSH_KEY_PATH"), &nodes[nodeInx], &wg, &step)
 				}
 			}
 

@@ -1,9 +1,6 @@
 // VIMTRUN#!
-// "$GOPATH"/bin/gec2 --credentials="/home/mihira/.ssh/aws-credentials" --region=ap-southeast-2 --sshkey=/home/mihira/.ssh/blocksci/blocksci.pem -v --context=/home/mihira/c/gec2/deploy_context
+// CREDENTIALS_FILE_PATH="/home/mihira/.ssh/aws-credentials" EC2_REGION="ap-southeast-2" DEPLOY_CONTEXT_PATH="/home/mihira/c/gec2/deploy_context" SSH_KEY_PATH=/home/mihira/.ssh/blocksci/blocksci.pem  "$GOPATH"/bin/gec2 2  -v
 // VIMTRUN#!
-
-// "$GOPATH"/bin/gec2 --credentials="/home/mihira/.ssh/orca/aws_creds" --region=NeCTAR --sshkey=/home/mihira/.ssh/orca/orca.pem --context=/home/mihira/c/gec2/deploy_context
-// "$GOPATH"/bin/gec2 --credentials="/home/mihira/.ssh/aws-credentials" --region=ap-southeast-2 --sshkey=/home/mihira/.ssh/blocksci/blocksci.pem --context=/home/mihira/c/gec2/deploy_context
 package main
 
 import (
@@ -11,6 +8,7 @@ import (
 	"gec2/aws"
 	"gec2/config"
 	"gec2/ec2Query"
+	"gec2/log"
 	"gec2/nodeContext"
 	"gec2/opts"
 	"gec2/provision"
@@ -18,7 +16,7 @@ import (
 	"gec2/schemaWriter"
 	gec2ssh "gec2/ssh"
 	"github.com/sirupsen/logrus"
-	"gec2/log"
+	"github.com/spf13/viper"
 	"time"
 )
 
@@ -44,7 +42,7 @@ func main() {
 	}
 
 	// Parse the config
-	configPath := fmt.Sprintf("%s/%s", opts.Opts.DeployContext, ConfigFileName)
+	configPath := fmt.Sprintf("%s/%s", viper.GetString("DEPLOY_CONTEXT_PATH"), ConfigFileName)
 	err = config.ParseConfig(configPath)
 	if err != nil {
 		log.Fatalf("Parsing config got error: %s", err)
@@ -53,7 +51,7 @@ func main() {
 	}
 
 	// Parse the secrets config
-	secretsPath := fmt.Sprintf("%s/%s", opts.Opts.DeployContext, SecretsFileName)
+	secretsPath := fmt.Sprintf("%s/%s", viper.GetString("DEPLOY_CONTEXT_PATH"), SecretsFileName)
 	er := config.ParseSecrets(secretsPath)
 	if er != nil {
 		log.Infof("Could not parse secrets : %s\n", err)
@@ -62,7 +60,7 @@ func main() {
 	}
 
 	// Parse the roles
-	rolePath := fmt.Sprintf("%s/%s", opts.Opts.DeployContext, RoleFileName)
+	rolePath := fmt.Sprintf("%s/%s", viper.GetString("DEPLOY_CONTEXT_PATH"), RoleFileName)
 	roles.ParseRoles(rolePath)
 	if err != nil {
 		log.Fatalf("Parsing roles got error: %s", err)
@@ -105,7 +103,7 @@ func main() {
 		allRunning = true
 		resChannel := make(chan gec2ssh.CheckSSHResult)
 		for inx, _ := range runningNodes {
-			go gec2ssh.CheckSSH(opts.Opts.SshKeyPath, &runningNodes[inx], resChannel)
+			go gec2ssh.CheckSSH(viper.GetString("SSH_KEY_PATH"), &runningNodes[inx], resChannel)
 		}
 		for range runningNodes {
 			result := <-resChannel

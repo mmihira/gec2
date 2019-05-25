@@ -3,17 +3,17 @@ package ssh
 import (
 	"bufio"
 	"fmt"
-	"gec2/schemaWriter"
-	"gec2/nodeContext"
 	"gec2/config"
-	"github.com/pkg/sftp"
 	"gec2/log"
+	"gec2/nodeContext"
+	"gec2/schemaWriter"
+	"github.com/pkg/sftp"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"golang.org/x/crypto/ssh"
-	"io/ioutil"
-	"gec2/opts"
-	"strings"
 	"io"
+	"io/ioutil"
+	"strings"
 	"sync"
 	"time"
 )
@@ -83,7 +83,9 @@ func runCommand(client *ssh.Client, command string, outputPrefix string) error {
 
 func CopyFile(client *ssh.Client, fileContents []byte, location string) error {
 	sftp, err := sftp.NewClient(client)
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 	defer sftp.Close()
 
 	f, err := sftp.Create(location)
@@ -111,18 +113,20 @@ func RunScripts(
 	}
 
 	sshConfig := &ssh.ClientConfig{
-		User: "ubuntu",
-		Auth: []ssh.AuthMethod{ keyFile, },
+		User:            "ubuntu",
+		Auth:            []ssh.AuthMethod{keyFile},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         time.Until(time.Now().Add(time.Second * 3)),
 	}
 
 	for _, scriptPath := range scriptPaths {
 
-		scriptName := fmt.Sprintf("%s/%s", opts.Opts.DeployContext, scriptPath)
+		scriptName := fmt.Sprintf("%s/%s", viper.GetString("DEPLOY_CONTEXT_PATH"), scriptPath)
 
 		fileContents, err := ioutil.ReadFile(scriptName)
-		if err != nil { log.Fatalf("Read script error: %s", err) }
+		if err != nil {
+			log.Fatalf("Read script error: %s", err)
+		}
 
 		client, err := ssh.Dial("tcp", fmt.Sprintf(
 			"%s:%s",
@@ -130,7 +134,9 @@ func RunScripts(
 			"22",
 		), sshConfig)
 
-		if err != nil { return false, err }
+		if err != nil {
+			return false, err
+		}
 
 		// Copy the script
 		log.Infof("Installing script for %s", name)
@@ -177,8 +183,8 @@ func CopyFileRemote(
 	}
 
 	sshConfig := &ssh.ClientConfig{
-		User: "ubuntu",
-		Auth: []ssh.AuthMethod{keyFile },
+		User:            "ubuntu",
+		Auth:            []ssh.AuthMethod{keyFile},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         time.Until(time.Now().Add(time.Second * 3)),
 	}
@@ -189,7 +195,9 @@ func CopyFileRemote(
 		"22",
 	), sshConfig)
 
-	if err != nil { return false, err }
+	if err != nil {
+		return false, err
+	}
 
 	log.Infof("copying file for %s to %s", name, destination)
 	CopyFile(client, fileContents, destination)

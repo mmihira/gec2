@@ -3,7 +3,7 @@ package log
 import (
 	"fmt"
 	"github.com/sirupsen/logrus"
-	"gec2/opts"
+	"github.com/spf13/viper"
 	"os"
 	"time"
 )
@@ -17,7 +17,7 @@ func NewFileLogHook() (*FileLogHook, error) {
 	t := time.Now()
 	name := fmt.Sprintf(
 		"%s/%d_%02d_%02dT%02d:%02d:%02d_deployment.log",
-		opts.Opts.DeployContext,
+		viper.GetString("DEPLOY_CONTEXT_PATH"),
 		t.Year(), t.Month(), t.Day(),
 		t.Hour(), t.Minute(), t.Second())
 	file, err := os.OpenFile(name, os.O_CREATE|os.O_WRONLY, 0666)
