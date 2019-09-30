@@ -28,7 +28,7 @@ var SecretsFileName = "secrets.json"
 var RoleFileName = "roles.yaml"
 
 func main() {
-	err := opts.ParseOpts()
+	err := opts.ParseAppConfigCmdLine()
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -106,7 +106,11 @@ func main() {
 			allRunning = true
 			resChannel := make(chan gec2ssh.CheckSSHResult)
 			for inx, _ := range runningNodes {
-				go gec2ssh.CheckSSH(viper.GetString("SSH_KEY_PATH"), &runningNodes[inx], resChannel)
+				go gec2ssh.CheckSSH(
+					viper.GetString("SSH_KEY_PATH"),
+					&runningNodes[inx],
+					resChannel,
+				)
 			}
 			for range runningNodes {
 				result := <-resChannel

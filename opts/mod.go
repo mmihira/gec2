@@ -74,6 +74,10 @@ func ParseOpts() error {
 		return fmt.Errorf("Parsing args got error: %s", err)
 	}
 
+	return nil
+}
+
+func SetupViper() error {
 	viper.SetDefault("EC2_REGION", "")
 	viper.SetDefault("SSH_KEY_PATH", "/sshKey")
 	viper.SetDefault("CREDENTIALS_FILE_PATH", "/credentials")
@@ -96,4 +100,10 @@ func ParseOpts() error {
 	}
 
 	return nil
+}
+
+func ParseAppConfigCmdLine() error {
+	err := ParseOpts()
+	err = SetupViper()
+	return err
 }

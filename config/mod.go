@@ -129,6 +129,10 @@ func ParseConfig(pathToConfig string) error {
 	return createConfig(dat)
 }
 
+func ParseFromString(dat string) error {
+	return createConfig([]byte(dat))
+}
+
 func createConfig(dat []byte) error {
 	ConfigSingleton = Config{}
 	err := yaml.Unmarshal(dat, &ConfigSingleton)
