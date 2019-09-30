@@ -96,3 +96,7 @@ The context foler should be a folder with at a minimum these files:
 
 - `roles.yaml`
 - `config.yaml`
+
+## Tests
+
+Run `go test -v ./...`
