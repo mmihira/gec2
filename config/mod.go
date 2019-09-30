@@ -3,18 +3,33 @@ package config
 import (
 	"errors"
 	"fmt"
+	"github.com/Jeffail/gabs"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/ghodss/yaml"
-	"github.com/Jeffail/gabs"
 	"io/ioutil"
 )
 
-// InstanceConfig struct to represent an instance config
+const SECRETS_FILE = "secrets.yaml"
+const NECTAR_PROVIDER = "Nectar"
+const AWS_PROVIDER = "AWS"
+
+// ConfigSingleton The config singleton
+var ConfigSingleton Config
+
+type Config struct {
+	Provider string     `json:"provider"`
+	Nodes    []NodeInst `json:"nodes"`
+	Roles    []string   `json:"roles"`
+}
+
+type NodeInst map[string]InstanceConfig
+
+// InstanceConfig
 type InstanceConfig struct {
 	Ami              string   `json:"ami"`
 	Type             string   `json:"type"`
 	Placement        string   `json:"placement"`
-	AttachVolume     string   `json:"attach_volume"`
+	AttachVolume     bool     `json:"attach_volume"`
 	Volume           string   `json:"volume"`
 	VolumeMountPoint string   `json:"volume_mount_point"`
 	VolumeMountDir   string   `json:"volume_mount_dir"`
@@ -22,34 +37,17 @@ type InstanceConfig struct {
 	EnvInjection     []string `json:"env_injection"`
 	SecurityGroups   []string `json:"security_groups"`
 	Roles            []string `json:"roles"`
+	SshParam 				 `json:"sshParams"`
 }
 
-type NodeInst map[string]InstanceConfig
-type Config struct {
-	Provider string     `json:"provider"`
-	Nodes    []NodeInst `json:"nodes"`
-	Roles    []string   `json:"roles"`
+type SshParam struct {
+	HostName string `json:"hostName"`
+	Port     int32  `json:"port"`
 }
 
-const NECTAR_PROVIDER = "Nectar"
-const AWS_PROVIDER = "AWS"
-
-// ConfigSingleton The config singleton
-var ConfigSingleton Config
-
-const SECRETS_FILE = "secrets.yaml"
+var NodesMap map[string]InstanceConfig
 var secretsMap *gabs.Container
 var isSecretsValid bool
-
-// ProviderIsNectar
-func ProviderIsNectar() bool {
-	return ConfigSingleton.Provider == NECTAR_PROVIDER
-}
-
-// ProviderIsAws
-func ProviderIsAWS() bool {
-	return ConfigSingleton.Provider == AWS_PROVIDER
-}
 
 // Name get the name of a node
 func (s *NodeInst) Name() *string {
@@ -124,25 +122,47 @@ func (s *InstanceConfig) SecurityGroupsForAws() []*string {
 	return ret
 }
 
-// ParseConfig Initially parse the config
-// Call this first of all
-func ParseConfig(path string) error {
-	dat, _ := ioutil.ReadFile(path)
+// ParseConfig Initially parses the config
+// This function should be called initially to populate ConfigSingleton
+func ParseConfig(pathToConfig string) error {
+	dat, _ := ioutil.ReadFile(pathToConfig)
+	return createConfig(dat)
+}
+
+func createConfig(dat []byte) error {
+	ConfigSingleton = Config{}
 	err := yaml.Unmarshal(dat, &ConfigSingleton)
 
 	if err != nil {
 		return err
 	}
 
-	if ConfigSingleton.Provider != AWS_PROVIDER && ConfigSingleton.Provider != NECTAR_PROVIDER {
+	if ConfigSingleton.Provider != AWS_PROVIDER &&
+		ConfigSingleton.Provider != NECTAR_PROVIDER {
 		return fmt.Errorf("Provider must be one of %s or %s", AWS_PROVIDER, NECTAR_PROVIDER)
+	}
+
+	NodesMap = map[string]InstanceConfig{}
+	for nIdx := range ConfigSingleton.Nodes {
+		node := ConfigSingleton.Nodes[nIdx]
+		keys := []string{}
+		for k := range node {
+			keys = append(keys, k)
+		}
+		if len(keys) != 1 {
+			return fmt.Errorf(
+				"Incorrect node config format. Only expect one key, the name of the node to define the node configuration",
+			)
+		}
+
+		NodesMap[keys[0]] = node[keys[0]]
 	}
 
 	return nil
 }
 
 func ParseSecrets(path string) error {
-	secretsDat, readErr:= ioutil.ReadFile(path)
+	secretsDat, readErr := ioutil.ReadFile(path)
 
 	if readErr != nil {
 		return readErr
@@ -156,7 +176,6 @@ func ParseSecrets(path string) error {
 	} else {
 		return secretsErr
 	}
-
 	return nil
 }
 
@@ -171,4 +190,14 @@ func IsSecrestValid() bool {
 // GetConfig Get the config
 func GetConfig() Config {
 	return ConfigSingleton
+}
+
+// ProviderIsNectar
+func ProviderIsNectar() bool {
+	return ConfigSingleton.Provider == NECTAR_PROVIDER
+}
+
+// ProviderIsAws
+func ProviderIsAWS() bool {
+	return ConfigSingleton.Provider == AWS_PROVIDER
 }
