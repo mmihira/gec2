@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"gec2/log"
+	"gec2/opts"
 	"time"
 )
 
@@ -41,22 +42,15 @@ func provisionNameForNectar(ec2svc *ec2.EC2, name string) (*ec2.Reservation, err
 	return rresult, nil
 }
 
-func provisionNameForAws(ec2svc *ec2.EC2, name string) (*ec2.Reservation, error) {
+func runInstancesInputForAws(name string) (*ec2.RunInstancesInput, error) {
 	node, getNodeError := config.GetNode(name)
 	if getNodeError != nil {
 		return nil, fmt.Errorf("In config get node: %s", getNodeError)
 	}
 	config := node.Config()
 
-	startinput := &ec2.RunInstancesInput{
-		BlockDeviceMappings: []*ec2.BlockDeviceMapping{
-			{
-				DeviceName: aws.String("/dev/sda1"),
-				Ebs: &ec2.EbsBlockDevice{
-					VolumeSize: aws.Int64(100),
-				},
-			},
-		},
+	input:= &ec2.RunInstancesInput{
+		BlockDeviceMappings: config.DeviceMappingsForAws(),
 		ImageId:        &config.Ami,
 		InstanceType:   &config.Type,
 		KeyName:        &config.KeyName,
@@ -69,7 +63,7 @@ func provisionNameForAws(ec2svc *ec2.EC2, name string) (*ec2.Reservation, error)
 				ResourceType: aws.String("instance"),
 				Tags: []*ec2.Tag{
 					{
-						Key:   aws.String("Name"),
+						Key:   aws.String(opts.TaggedKeyName()),
 						Value: node.Name(),
 					},
 				},
@@ -77,12 +71,21 @@ func provisionNameForAws(ec2svc *ec2.EC2, name string) (*ec2.Reservation, error)
 		},
 	}
 
-	rresult, err := ec2svc.RunInstances(startinput)
+	return input, nil
+}
+
+func provisionNameForAws(ec2svc *ec2.EC2, name string) (*ec2.Reservation, error) {
+	startinput, err := runInstancesInputForAws(name)
+	if err != nil {
+		return nil, fmt.Errorf("In config get node: %s", err)
+	}
+
+	result, err := ec2svc.RunInstances(startinput)
 	if err != nil {
 		return nil, fmt.Errorf("When requesting run instance %s", err)
 	}
 
-	return rresult, nil
+	return result, nil
 }
 
 // ProvisionName Provision a node by name
@@ -164,6 +167,7 @@ func EnsureConfigProvisioned(ec2svc *ec2.EC2) error {
 		time.Sleep(time.Second * 3)
 	}
 
+	// If nectar need to tag after creation
 	if config.ProviderIsNectar() && len(reservations) > 0 {
 		log.Info("Setting tags for nodes...")
 		for _, res := range reservations {
@@ -174,7 +178,7 @@ func EnsureConfigProvisioned(ec2svc *ec2.EC2) error {
 				},
 				Tags: []*ec2.Tag{
 					{
-						Key:   aws.String("Name"),
+						Key:   aws.String(opts.TaggedKeyName()),
 						Value: aws.String(*res.Node.Name()),
 					},
 				},

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Jeffail/gabs"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/ghodss/yaml"
 	"io/ioutil"
 )
@@ -23,27 +22,6 @@ type Config struct {
 }
 
 type NodeInst map[string]InstanceConfig
-
-// InstanceConfig
-type InstanceConfig struct {
-	Ami              string   `json:"ami"`
-	Type             string   `json:"type"`
-	Placement        string   `json:"placement"`
-	AttachVolume     bool     `json:"attach_volume"`
-	Volume           string   `json:"volume"`
-	VolumeMountPoint string   `json:"volume_mount_point"`
-	VolumeMountDir   string   `json:"volume_mount_dir"`
-	KeyName          string   `json:"keyname"`
-	EnvInjection     []string `json:"env_injection"`
-	SecurityGroups   []string `json:"security_groups"`
-	Roles            []string `json:"roles"`
-	SshParam 				 `json:"sshParams"`
-}
-
-type SshParam struct {
-	HostName string `json:"hostName"`
-	Port     int32  `json:"port"`
-}
 
 var NodesMap map[string]InstanceConfig
 var secretsMap *gabs.Container
@@ -111,15 +89,6 @@ func (s *NodeInst) Config() InstanceConfig {
 		keys = append(keys, k)
 	}
 	return (*s)[keys[0]]
-}
-
-// SecurityGroupsForAws The SecurityGroupsForAws
-func (s *InstanceConfig) SecurityGroupsForAws() []*string {
-	var ret []*string
-	for _, sg := range s.SecurityGroups {
-		ret = append(ret, aws.String(sg))
-	}
-	return ret
 }
 
 // ParseConfig Initially parses the config
