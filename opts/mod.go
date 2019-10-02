@@ -102,6 +102,12 @@ func SetupViper() error {
 	return nil
 }
 
+// TaggedKeyName This is the tag key used to identify the name of the node
+// It must be equal to "Name" because AWS uses that key name to name an instance
+func TaggedKeyName() string {
+	return "Name"
+}
+
 func ParseAppConfigCmdLine() error {
 	err := ParseOpts()
 	err = SetupViper()
