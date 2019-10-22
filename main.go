@@ -92,10 +92,12 @@ func main() {
 		})
 	}
 
-	// Write config information
-	err = schemaWriter.WriteSchema(runningNodes)
-	if err != nil {
-		log.Fatal(err)
+	if opts.DoStageAll() || opts.StageProvision() {
+		// Write config information
+		err = schemaWriter.WriteSchema(runningNodes)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	if opts.DoStageAll() || opts.StageSSHCheck() {
