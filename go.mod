@@ -16,3 +16,5 @@ require (
 	github.com/spf13/viper v1.3.2
 	golang.org/x/crypto v0.0.0-20190320223903-b7391e95e576
 )
+
+go 1.13

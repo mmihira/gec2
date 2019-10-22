@@ -8,6 +8,9 @@ import (
 	"time"
 )
 
+const DEFAULT_SSH_PORT = 22
+const DEFAULT_USER = "ubuntu"
+
 type CheckSSHResult struct {
 	Name        string
 	DidConnect  bool
@@ -30,7 +33,6 @@ func KeyFile(file string) (ssh.AuthMethod, error) {
 	return ssh.PublicKeys(key), nil
 }
 
-
 // CheckSSH Check if ssh access is available
 func CheckSSH(
 	keyFilePath string,
@@ -45,8 +47,8 @@ func CheckSSH(
 	}
 
 	sshConfig := &ssh.ClientConfig{
-		User: "ubuntu",
-		Auth: []ssh.AuthMethod{keyFile },
+		User:            "ubuntu",
+		Auth:            []ssh.AuthMethod{keyFile},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         time.Until(time.Now().Add(time.Second * 3)),
 	}

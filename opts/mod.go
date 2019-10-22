@@ -88,8 +88,6 @@ func SetupViper() error {
 	viper.BindEnv("CREDENTIALS_FILE_PATH", "CREDENTIALS_FILE_PATH")
 	viper.BindEnv("DEPLOY_CONTEXT_PATH", "DEPLOY_CONTEXT_PATH")
 
-	viper.SetConfigType("yaml")
-
 	if len(Opts.ConfigPath) != 0 {
 		fmt.Printf("Loading config from %s", Opts.ConfigPath)
 		viper.SetConfigFile(Opts.ConfigPath)

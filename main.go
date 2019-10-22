@@ -1,5 +1,5 @@
 // VIMTRUN#!
-// CREDENTIALS_FILE_PATH="/home/mihira/.ssh/aws-credentials" EC2_REGION="ap-southeast-2" DEPLOY_CONTEXT_PATH="/home/mihira/c/gec2/deploy_context" SSH_KEY_PATH=/home/mihira/.ssh/blocksci/blocksci.pem  "$GOPATH"/bin/gec2 2  -v -r echo -n appUi -s cmd -n minio
+// CREDENTIALS_FILE_PATH="/home/mihira/.ssh/aws-credentials" EC2_REGION="ap-southeast-2" DEPLOY_CONTEXT_PATH="/home/mihira/c/gec2/deploy_context" SSH_KEY_PATH=/home/mihira/.ssh/blocksci/blocksci.pem  "$GOPATH"/bin/gec2 2  -v -r echo -n appUi -n minio
 // VIMTRUN#!
 package main
 

@@ -52,7 +52,7 @@ func runCommand(client *ssh.Client, command string, outputPrefix string) error {
 		}
 
 		if err := scanner.Err(); err != nil {
-			log.Errorf("Scanner to run command %s got error %s", command, err)
+			log.Errorf("Scanner to run command got error %s", err)
 		}
 
 		defer r.Close()
@@ -68,15 +68,15 @@ func runCommand(client *ssh.Client, command string, outputPrefix string) error {
 		}
 
 		if err := scanner.Err(); err != nil {
-			log.Errorf("Scanner to run command %s got error %s", command, err)
+			log.Errorf("Scanner to run command got error %s", err)
 		}
 
 		defer er.Close()
 	}()
 
 	if err := session.Run(command); err != nil {
-		log.Errorf("Failed to run command %s: %s ", command, err.Error())
-		return fmt.Errorf("Failed to run command %s: %s", command, err)
+		log.Errorf("Failed to run command %s ", err.Error())
+		return fmt.Errorf("Failed to run command %s", err)
 	}
 	return nil
 }

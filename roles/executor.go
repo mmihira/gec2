@@ -95,11 +95,15 @@ func executeStepTemplate(
 	return nil
 }
 
-// ExecuteRole
+// ExecuteRole Execute the role on the node
 func ExecuteRole(nodes []nodeContext.NodeContext, roleName string) {
 	role, roleFound := RolesSingleton[roleName]
 	if !roleFound {
 		log.Fatalf("Role %s doesn't exist in roles", roleName)
+	}
+
+	if len(role.Steps) == 0 {
+		log.Fatalf("Role %s had no steps - aborting", roleName)
 	}
 
 	for _, step := range role.Steps {

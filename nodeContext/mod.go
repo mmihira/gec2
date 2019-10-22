@@ -5,7 +5,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 )
 
-// Get latest node information
 type NodeContext struct {
 	Name     string
 	Node     config.NodeInst
