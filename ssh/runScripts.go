@@ -45,6 +45,8 @@ func runCommand(client *ssh.Client, command string, outputPrefix string) error {
 	// Standard out scanner
 	go func() {
 		scanner := bufio.NewScanner(r)
+		buf := make([]byte, 0, 128*1024)
+		scanner.Buffer(buf, 1024*1024)
 		for scanner.Scan() {
 			log.WithFields(logrus.Fields{
 				"node": outputPrefix,
@@ -53,6 +55,8 @@ func runCommand(client *ssh.Client, command string, outputPrefix string) error {
 
 		if err := scanner.Err(); err != nil {
 			log.Errorf("Scanner to run command got error %s", err)
+			session.Stdout = nil
+			w.Close()
 		}
 
 		defer r.Close()
@@ -61,6 +65,8 @@ func runCommand(client *ssh.Client, command string, outputPrefix string) error {
 	// Error scanner
 	go func() {
 		scanner := bufio.NewScanner(er)
+		buf := make([]byte, 0, 128*1024)
+		scanner.Buffer(buf, 1024*1024)
 		for scanner.Scan() {
 			log.WithFields(logrus.Fields{
 				"node": outputPrefix,
@@ -69,6 +75,8 @@ func runCommand(client *ssh.Client, command string, outputPrefix string) error {
 
 		if err := scanner.Err(); err != nil {
 			log.Errorf("Scanner to run command got error %s", err)
+			session.Stderr = nil
+			ew.Close()
 		}
 
 		defer er.Close()
