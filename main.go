@@ -1,5 +1,5 @@
 // VIMTRUN#!
-// CREDENTIALS_FILE_PATH="/home/mihira/.ssh/aws-credentials" EC2_REGION="ap-southeast-2" DEPLOY_CONTEXT_PATH="/home/mihira/c/gec2/deploy_context" SSH_KEY_PATH=/home/mihira/.ssh/blocksci/blocksci.pem  "$GOPATH"/bin/gec2 2  -v -r docker -n appUi -n minio
+// ROOT_PATH="/home/mihira/c/gec2/deploy_context" LOGS_PATH="/home/mihira/c/gec2/deploy_context/logs" ROLES_PATH="/home/mihira/c/gec2/deploy_context/roles" CREDENTIALS_FILE_PATH="/home/mihira/.ssh/aws-credentials" EC2_REGION="ap-southeast-2" DEPLOY_CONTEXT_PATH="/home/mihira/c/gec2/deploy_context/context" SSH_KEY_PATH=/home/mihira/.ssh/blocksci/blocksci.pem "$GOPATH"/bin/gec2 -v -r key -n appUi -n minio
 // VIMTRUN#!
 package main
 
@@ -60,7 +60,7 @@ func main() {
 	}
 
 	// Parse the roles
-	rolePath := fmt.Sprintf("%s/%s", viper.GetString("DEPLOY_CONTEXT_PATH"), RoleFileName)
+	rolePath := fmt.Sprintf("%s/%s", viper.GetString("ROLES_PATH"), RoleFileName)
 	roles.ParseRoles(rolePath)
 	if err != nil {
 		log.Fatalf("Parsing roles got error: %s", err)

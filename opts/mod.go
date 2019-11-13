@@ -82,11 +82,17 @@ func SetupViper() error {
 	viper.SetDefault("SSH_KEY_PATH", "/sshKey")
 	viper.SetDefault("CREDENTIALS_FILE_PATH", "/credentials")
 	viper.SetDefault("DEPLOY_CONTEXT_PATH", "/context")
+	viper.SetDefault("ROLES_PATH", "/roles")
+	viper.SetDefault("LOGS_PATH", "/logs")
+	viper.SetDefault("ROOT_PATH", "/")
 
 	viper.BindEnv("SSH_KEY_PATH", "SSH_KEY_PATH")
 	viper.BindEnv("EC2_REGION", "EC2_REGION")
 	viper.BindEnv("CREDENTIALS_FILE_PATH", "CREDENTIALS_FILE_PATH")
 	viper.BindEnv("DEPLOY_CONTEXT_PATH", "DEPLOY_CONTEXT_PATH")
+	viper.BindEnv("ROLES_PATH", "ROLES_PATH")
+	viper.BindEnv("LOGS_PATH", "LOGS_PATH")
+	viper.BindEnv("ROOT_PATH", "ROOT_PATH")
 
 	if len(Opts.ConfigPath) != 0 {
 		fmt.Printf("Loading config from %s", Opts.ConfigPath)

@@ -27,7 +27,7 @@ func executeStepCopy(
 	barrier.Add(1)
 	defer barrier.Done()
 
-	srcPath := fmt.Sprintf("%s/%s", viper.GetString("DEPLOY_CONTEXT_PATH"), step.Src)
+	srcPath := fmt.Sprintf("%s/%s", viper.GetString("ROOT_PATH"), step.Src)
 
 	if _, err := os.Stat(srcPath); os.IsNotExist(err) {
 		log.Errorf("%s", err)
@@ -58,7 +58,7 @@ func executeStepTemplate(
 	barrier *sync.WaitGroup,
 	step *Step,
 ) error {
-	tplPath := fmt.Sprintf("%s/%s", viper.GetString("DEPLOY_CONTEXT_PATH"), step.Src)
+	tplPath := fmt.Sprintf("%s/%s", viper.GetString("ROOT_PATH"), step.Src)
 
 	dat, err := ioutil.ReadFile(tplPath)
 	if err != nil {

@@ -129,7 +129,7 @@ func RunScripts(
 
 	for _, scriptPath := range scriptPaths {
 
-		scriptName := fmt.Sprintf("%s/%s", viper.GetString("DEPLOY_CONTEXT_PATH"), scriptPath)
+		scriptName := fmt.Sprintf("%s/%s", viper.GetString("ROOT_PATH"), scriptPath)
 
 		fileContents, err := ioutil.ReadFile(scriptName)
 		if err != nil {

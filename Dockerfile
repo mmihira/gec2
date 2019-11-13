@@ -36,4 +36,6 @@ RUN touch /config.yaml
 RUN touch /credentials
 RUN touch /sshKey
 RUN mkdir context
+RUN mkdir logs
+RUN mkdir roles
 ENTRYPOINT ["./main"]
