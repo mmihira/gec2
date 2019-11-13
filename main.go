@@ -20,11 +20,11 @@ import (
 	"time"
 )
 
-// The config file should always be names config.yaml
+// The config file should always be named config.yaml
 var ConfigFileName = "config.yaml"
 var SecretsFileName = "secrets.json"
 
-// The roles file should always be names roles.yaml
+// The roles file should always be named roles.yaml
 var RoleFileName = "roles.yaml"
 
 func main() {
@@ -65,8 +65,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Parsing roles got error: %s", err)
 	}
-	ec2svc, _ := aws.ConnectAWS()
 
+	ec2svc, _ := aws.ConnectAWS()
 	if opts.DoStageAll() || opts.StageProvision() {
 		// Provision nodes
 		provision.EnsureConfigProvisioned(ec2svc)
