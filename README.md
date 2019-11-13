@@ -76,9 +76,15 @@ First build this image
   ./docker_build.sh
 ```
 
+Or pull the latest version from dockerhub
+
+```bash
+  docker pull mmihira/gec2:1.1
+```
+
 Then run using the provided script
 ```bash
-./scripts/run.sh -c=<AWS_CREDENTIALS_PATH> -r=<REGION> -l=<CONTEXT_FOLDER> -s=<SSH_KEY_PATH>
+./scripts/run.sh -c=<AWS_CREDENTIALS_PATH> -r=<REGION> -l=<CONTEXT_FOLDER> -s=<SSH_KEY_PATH> --roles=<PATH_TO_ROLES> --logs=<PATH_TO_LOGS>
 ```
 
 `AWS_CREDENTIALS_PATH` must be the path to you AWS (or NeCTAR) credentails file which looks like:
@@ -92,10 +98,10 @@ region = <>
 `SSH_KEY_PATH` the path to the ssh key for access to the nodes. <br/>
 The use of only one key is supported at this time
 
-The context foler should be a folder with at a minimum these files:
-
-- `roles.yaml`
-- `config.yaml`
+- The context foler should be a folder with at a minimum these files:
+  - `config.yaml`
+- The roles folder should be a folder with the roles
+- The log folder is where deploy logs are written to
 
 ## Tests
 
