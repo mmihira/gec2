@@ -1,12 +1,12 @@
 package schemaWriter
 
 import (
-	"github.com/spf13/viper"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"gec2/config"
 	"gec2/nodeContext"
+	"github.com/spf13/viper"
+	"io/ioutil"
 	"os"
 )
 
@@ -16,17 +16,17 @@ var SCHEMA_NAME = "deployed_schema.json"
 // Build the schema
 func buildSchema(instances []nodeContext.NodeContext) (schema *Schema, err error) {
 	schema = &Schema{
-		Nodes: map[string]NodeSchema{},
+		Nodes:     map[string]NodeSchema{},
 		WithRoles: map[string][]NodeSchema{},
 	}
 
 	for _, ctxt := range instances {
-		(*schema).Nodes[ctxt.Name] = NodeSchema{
-			Name:    	ctxt.Name,
-			KeyName: 	ctxt.Node[ctxt.Name].KeyName,
-			Roles:   	ctxt.Node[ctxt.Name].Roles,
-			Ip:      	ctxt.PublicIpAddress(),
-			PrivateIp: ctxt.PrivateIpAddress(),
+		(*schema).Nodes[ctxt.Name()] = NodeSchema{
+			InstName:    ctxt.Name(),
+			InstKeyName: ctxt.KeyName(),
+			InstRoles:   ctxt.Roles(),
+			Ip:          ctxt.PublicIpAddress(),
+			PrivateIp:   ctxt.PrivateIpAddress(),
 		}
 	}
 
@@ -34,7 +34,7 @@ func buildSchema(instances []nodeContext.NodeContext) (schema *Schema, err error
 		nodesInRole := []NodeSchema{}
 		for _, ctxt := range instances {
 			if ctxt.HasRole(role) {
-				nodesInRole = append(nodesInRole, (*schema).Nodes[ctxt.Name])
+				nodesInRole = append(nodesInRole, (*schema).Nodes[ctxt.Name()])
 			}
 		}
 
@@ -82,6 +82,20 @@ func ReadSchemaBytes() ([]byte, error) {
 	}
 
 	return dat, nil
+}
+
+func ReadSchemaObject() (*Schema, error) {
+	data, err := ReadSchemaBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	var schema Schema
+	if err = json.Unmarshal(data, &schema); err != nil {
+		return nil, err
+	} else {
+		return &schema, nil
+	}
 }
 
 // ReadSchema Read the schema

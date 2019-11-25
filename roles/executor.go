@@ -1,14 +1,14 @@
 package roles
 
 import (
-	"github.com/spf13/viper"
 	"bytes"
 	"fmt"
+	"gec2/log"
 	"gec2/nodeContext"
+	"gec2/opts"
 	"gec2/schemaWriter"
 	gec2ssh "gec2/ssh"
-	"gec2/opts"
-	"gec2/log"
+	"github.com/spf13/viper"
 	"io/ioutil"
 	"os"
 	"sync"
@@ -20,7 +20,7 @@ import (
 // Executes a copy step
 func executeStepCopy(
 	keyFilePath string,
-	ctx *nodeContext.NodeContext,
+	ctx nodeContext.NodeContext,
 	barrier *sync.WaitGroup,
 	step *Step,
 ) error {
@@ -54,7 +54,7 @@ func executeStepCopy(
 // Executes a template step
 func executeStepTemplate(
 	keyFilePath string,
-	ctx *nodeContext.NodeContext,
+	ctx nodeContext.NodeContext,
 	barrier *sync.WaitGroup,
 	step *Step,
 ) error {
@@ -114,9 +114,9 @@ func ExecuteRole(nodes []nodeContext.NodeContext, roleName string) {
 			var wg sync.WaitGroup
 
 			for nodeInx, node := range nodes {
-				if node.HasRole(roleName) || opts.HasSpecifiedNode(node.Name) {
+				if node.HasRole(roleName) || opts.HasSpecifiedNode(node.Name()) {
 					wg.Add(1)
-					go executeStepCopy(viper.GetString("SSH_KEY_PATH"), &nodes[nodeInx], &wg, &step)
+					go executeStepCopy(viper.GetString("SSH_KEY_PATH"), nodes[nodeInx], &wg, &step)
 				}
 			}
 
@@ -128,9 +128,9 @@ func ExecuteRole(nodes []nodeContext.NodeContext, roleName string) {
 			var wg sync.WaitGroup
 
 			for nodeInx, node := range nodes {
-				if node.HasRole(roleName) || opts.HasSpecifiedNode(node.Name) {
+				if node.HasRole(roleName) || opts.HasSpecifiedNode(node.Name()) {
 					wg.Add(1)
-					go gec2ssh.RunScripts(step.Scripts, viper.GetString("SSH_KEY_PATH"), &nodes[nodeInx], &wg)
+					go gec2ssh.RunScripts(step.Scripts, viper.GetString("SSH_KEY_PATH"), nodes[nodeInx], &wg)
 				}
 			}
 
@@ -141,9 +141,9 @@ func ExecuteRole(nodes []nodeContext.NodeContext, roleName string) {
 			var wg sync.WaitGroup
 
 			for nodeInx, node := range nodes {
-				if node.HasRole(roleName) || opts.HasSpecifiedNode(node.Name) {
+				if node.HasRole(roleName) || opts.HasSpecifiedNode(node.Name()) {
 					wg.Add(1)
-					go executeStepTemplate(viper.GetString("SSH_KEY_PATH"), &nodes[nodeInx], &wg, &step)
+					go executeStepTemplate(viper.GetString("SSH_KEY_PATH"), nodes[nodeInx], &wg, &step)
 				}
 			}
 

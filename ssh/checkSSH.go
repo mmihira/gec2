@@ -36,13 +36,13 @@ func KeyFile(file string) (ssh.AuthMethod, error) {
 // CheckSSH Check if ssh access is available
 func CheckSSH(
 	keyFilePath string,
-	ctx *nodeContext.NodeContext,
+	ctx nodeContext.NodeContext,
 	resChan chan CheckSSHResult,
 ) {
 
 	keyFile, err := KeyFile(keyFilePath)
 	if err != nil {
-		resChan <- CheckSSHResult{ctx.Name, false, true, fmt.Sprintf("Faled to Dial %s", err)}
+		resChan <- CheckSSHResult{ctx.Name(), false, true, fmt.Sprintf("Faled to Dial %s", err)}
 		return
 	}
 
@@ -60,8 +60,8 @@ func CheckSSH(
 	), sshConfig)
 
 	if errs != nil {
-		resChan <- CheckSSHResult{ctx.Name, false, true, fmt.Sprintf("Faled to Dial %s", errs)}
+		resChan <- CheckSSHResult{ctx.Name(), false, true, fmt.Sprintf("Faled to Dial %s", errs)}
 	} else {
-		resChan <- CheckSSHResult{ctx.Name, true, false, ""}
+		resChan <- CheckSSHResult{ctx.Name(), true, false, ""}
 	}
 }

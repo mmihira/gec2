@@ -110,10 +110,10 @@ func CopyFile(client *ssh.Client, fileContents []byte, location string) error {
 func RunScripts(
 	scriptPaths []string,
 	keyFilePath string,
-	ctx *nodeContext.NodeContext,
+	ctx nodeContext.NodeContext,
 	barrier *sync.WaitGroup,
 ) (bool, error) {
-	name := ctx.Name
+	name := ctx.Name()
 
 	keyFile, err := KeyFile(keyFilePath)
 	if err != nil {
@@ -180,10 +180,10 @@ func CopyFileRemote(
 	fileContents []byte,
 	keyFilePath string,
 	destination string,
-	ctx *nodeContext.NodeContext,
+	ctx nodeContext.NodeContext,
 	barrier *sync.WaitGroup,
 ) (bool, error) {
-	name := ctx.Name
+	name := ctx.Name()
 
 	keyFile, err := KeyFile(keyFilePath)
 	if err != nil {

@@ -1,5 +1,5 @@
 // VIMTRUN#!
-// ROOT_PATH="/home/mihira/c/gec2/deploy_context" LOGS_PATH="/home/mihira/c/gec2/deploy_context/logs" ROLES_PATH="/home/mihira/c/gec2/deploy_context/roles" CREDENTIALS_FILE_PATH="/home/mihira/.ssh/aws-credentials" EC2_REGION="ap-southeast-2" DEPLOY_CONTEXT_PATH="/home/mihira/c/gec2/deploy_context/context" SSH_KEY_PATH=/home/mihira/.ssh/blocksci/blocksci.pem "$GOPATH"/bin/gec2 -v -r key -n appUi -n minio
+// ROOT_PATH="/home/mihira/c/gec2/deploy_context" LOGS_PATH="/home/mihira/c/gec2/deploy_context/logs" ROLES_PATH="/home/mihira/c/gec2/deploy_context/roles" CREDENTIALS_FILE_PATH="/home/mihira/.ssh/aws-credentials" EC2_REGION="ap-southeast-2" DEPLOY_CONTEXT_PATH="/home/mihira/c/gec2/deploy_context/context" SSH_KEY_PATH=/home/mihira/.ssh/blocksci/blocksci.pem "$GOPATH"/bin/gec2 -v -s cmd -r echo -n appUi
 // VIMTRUN#!
 package main
 
@@ -27,6 +27,31 @@ var SecretsFileName = "secrets.json"
 // The roles file should always be named roles.yaml
 var RoleFileName = "roles.yaml"
 
+func ConfigPath() string {
+	return fmt.Sprintf("%s/%s", viper.GetString("DEPLOY_CONTEXT_PATH"), ConfigFileName)
+}
+
+func setupConfig() {
+	var err error
+	// Parse the config
+	err = config.ParseConfig(ConfigPath())
+	if err != nil {
+		log.Fatalf("Parsing config got error: %s", err)
+	} else {
+		log.Info("Config loaded from %s", ConfigPath())
+	}
+}
+
+func setupRoles() {
+	var err error
+	// Parse the roles
+	rolePath := fmt.Sprintf("%s/%s", viper.GetString("ROLES_PATH"), RoleFileName)
+	roles.ParseRoles(rolePath)
+	if err != nil {
+		log.Fatalf("Parsing roles got error: %s", err)
+	}
+}
+
 func main() {
 	err := opts.ParseAppConfigCmdLine()
 	if err != nil {
@@ -35,61 +60,53 @@ func main() {
 	}
 
 	log.Setup()
-	log.Info("Running gec2 v0.1.0")
+	log.Info("Running gec2 v1.1.0")
 	// Parse command line options
 	if opts.Opts.Verbose {
 		log.SetLevel(logrus.DebugLevel)
 	}
 
-	// Parse the config
-	configPath := fmt.Sprintf("%s/%s", viper.GetString("DEPLOY_CONTEXT_PATH"), ConfigFileName)
-	err = config.ParseConfig(configPath)
-	if err != nil {
-		log.Fatalf("Parsing config got error: %s", err)
-	} else {
-		log.Info("Config loaded from %s", configPath)
-	}
+	setupConfig()
+	setupRoles()
 
-	// Parse the secrets config
-	secretsPath := fmt.Sprintf("%s/%s", viper.GetString("DEPLOY_CONTEXT_PATH"), SecretsFileName)
-	er := config.ParseSecrets(secretsPath)
-	if er != nil {
-		log.Infof("Could not parse secrets : %s\n", err)
-	} else {
-		log.Info("Secrets loaded from %s", secretsPath)
-	}
-
-	// Parse the roles
-	rolePath := fmt.Sprintf("%s/%s", viper.GetString("ROLES_PATH"), RoleFileName)
-	roles.ParseRoles(rolePath)
-	if err != nil {
-		log.Fatalf("Parsing roles got error: %s", err)
-	}
-
-	ec2svc, _ := aws.ConnectAWS()
-	if opts.DoStageAll() || opts.StageProvision() {
-		// Provision nodes
-		provision.EnsureConfigProvisioned(ec2svc)
-	}
-
-	// Create node context
 	var runningNodes []nodeContext.NodeContext
-	for _, name := range config.Names() {
-		nodeInst, err := ec2Query.GetInstanceByName(ec2svc, name)
-		if err != nil {
-			log.Infof("%s: could not be get. Error: %s \n", name, err)
+	if !opts.StageCMD() {
+		ec2svc, _ := aws.ConnectAWS()
+		if opts.DoStageAll() || opts.StageProvision() {
+			// Provision nodes
+			provision.EnsureConfigProvisioned(ec2svc)
 		}
 
-		node, err := config.GetNode(name)
+		// Create node context
+		for _, name := range config.Names() {
+			nodeInst, err := ec2Query.GetInstanceByName(ec2svc, name)
+			if err != nil {
+				log.Infof("%s: could not be get. Error: %s \n", name, err)
+			}
+
+			node, err := config.GetNode(name)
+			if err != nil {
+				log.Fatalf("Could not fine node %s in config", name)
+			}
+
+			runningNodes = append(runningNodes, &nodeContext.Ec2NodeContext{
+				InstName: name,
+				Node:     node,
+				Instance: nodeInst,
+			})
+		}
+	} else {
+		log.Info("Loaded schema to use as node context", ConfigPath())
+
+		// Read the deployed_schema configuration
+		schema, err := schemaWriter.ReadSchemaObject()
 		if err != nil {
-			log.Fatalf("Could not fine node %s in config", name)
+			log.Fatal(err)
 		}
 
-		runningNodes = append(runningNodes, nodeContext.NodeContext{
-			Name:     name,
-			Node:     node,
-			Instance: nodeInst,
-		})
+		for _, node := range schema.Nodes {
+			runningNodes = append(runningNodes, &node)
+		}
 	}
 
 	if opts.DoStageAll() || opts.StageProvision() {
@@ -110,7 +127,7 @@ func main() {
 			for inx, _ := range runningNodes {
 				go gec2ssh.CheckSSH(
 					viper.GetString("SSH_KEY_PATH"),
-					&runningNodes[inx],
+					runningNodes[inx],
 					resChannel,
 				)
 			}
