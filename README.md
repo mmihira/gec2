@@ -103,6 +103,12 @@ The use of only one key is supported at this time
 - The roles folder should be a folder with the roles
 - The log folder is where deploy logs are written to
 
+## Available run modes
+
+- `listImages` List all the available images
+- `provision` Provision the nodes don't run any roles
+- `cmd` Run a specific command on a specific node
+
 ## Tests
 
 Run `go test -v ./...`

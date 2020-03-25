@@ -22,10 +22,20 @@ const (
 	STAGE_PROVISION = "provision"
 	STAGE_SSH       = "ssh"
 	STAGE_CMD       = "cmd"
+	STAGE_LIST_IMAGES = "listImages"
 )
 
 func DoStageAll () bool {
 	return len(Opts.Stages) == 0
+}
+
+func StageListImages() bool {
+	for _, s := range Opts.Stages {
+		if s ==  STAGE_LIST_IMAGES {
+			return true
+		}
+	}
+	return false
 }
 
 func StageProvision() bool {

@@ -70,8 +70,16 @@ func main() {
 	setupRoles()
 
 	var runningNodes []nodeContext.NodeContext
+	if opts.StageListImages() {
+		ec2svc, _ := aws.ConnectAWS()
+		f, err := ec2svc.DescribeImages(nil)
+		fmt.Println(f, err)
+		return
+	}
+
 	if !opts.StageCMD() {
 		ec2svc, _ := aws.ConnectAWS()
+
 		if opts.DoStageAll() || opts.StageProvision() {
 			// Provision nodes
 			provision.EnsureConfigProvisioned(ec2svc)
