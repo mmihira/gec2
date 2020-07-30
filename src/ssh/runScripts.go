@@ -156,7 +156,7 @@ func RunScripts(
 		remoteSchemaPath := fmt.Sprintf(fmt.Sprintf("%s/%s", TMP_SCRIPT_PARENT, schemaWriter.SCHEMA_NAME))
 		CopyFile(client, schema, remoteSchemaPath)
 
-		log.Infof("running script %s for %s", scriptPath, name)
+		log.Infof("Running script %s for %s", scriptPath, name)
 		runCommand(client, "chmod u+x /tmp/toRun.sh", name)
 		runCommandString := fmt.Sprintf(
 			"GECSECRETS='%s' /tmp/toRun.sh %s",

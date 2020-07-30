@@ -31,7 +31,12 @@ func ConfigPath() string {
 	return fmt.Sprintf("%s/%s", viper.GetString("DEPLOY_CONTEXT_PATH"), ConfigFileName)
 }
 
+func SecretsPath() string {
+	return fmt.Sprintf("%s/%s", viper.GetString("DEPLOY_CONTEXT_PATH"), SecretsFileName)
+}
+
 func setupConfig() {
+	log.Infof("Deploy context path : %s", viper.GetString("DEPLOY_CONTEXT_PATH"))
 	var err error
 	// Parse the config
 	err = config.ParseConfig(ConfigPath())
@@ -39,6 +44,14 @@ func setupConfig() {
 		log.Fatalf("Parsing config got error: %s", err)
 	} else {
 		log.Info("Config loaded from %s", ConfigPath())
+	}
+
+	// Parse the secrets
+	err = config.ParseSecrets(SecretsPath())
+	if err != nil {
+		log.Fatalf("Parsing secrets got error: %s", err)
+	} else {
+		log.Info("Secrets parsed from %s", SecretsPath())
 	}
 }
 
