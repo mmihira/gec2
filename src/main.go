@@ -73,7 +73,7 @@ func main() {
 	}
 
 	log.Setup()
-	log.Info("Running gec2 v1.5.0")
+	log.Info("Running gec2 v1.5.1")
 	// Parse command line options
 	if opts.Opts.Verbose {
 		log.SetLevel(logrus.DebugLevel)
