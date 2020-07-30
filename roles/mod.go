@@ -6,13 +6,11 @@ import (
 
 type Script string
 
-// Name get the name of a node
 func (s *Script) FileName() string {
 	g := strings.Fields(string(*s))
 	return g[0]
 }
 
-// Name get the name of a node
 func (s *Script) Args() string {
 	g := strings.Fields(string(*s))
 	if len(g) > 1 {
