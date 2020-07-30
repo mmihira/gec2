@@ -50,5 +50,5 @@ docker run \
   --mount type=bind,source="${ROLESPATH}",target=/roles\
   --mount type=bind,source="${LOGSPATH}",target=/logs\
   -e EC2_REGION=${REGION} \
-  gec2:1.3;
+  gec2:1.5;
 
