@@ -1,4 +1,4 @@
-package roles
+package roleexecutor
 
 import (
 	"bytes"
@@ -6,8 +6,10 @@ import (
 	"gec2/log"
 	"gec2/nodeContext"
 	"gec2/opts"
+	"gec2/roles"
 	"gec2/schemaWriter"
 	gec2ssh "gec2/ssh"
+	"github.com/ghodss/yaml"
 	"github.com/spf13/viper"
 	"io/ioutil"
 	"os"
@@ -22,7 +24,7 @@ func executeStepCopy(
 	keyFilePath string,
 	ctx nodeContext.NodeContext,
 	barrier *sync.WaitGroup,
-	step *Step,
+	step *roles.Step,
 ) error {
 	barrier.Add(1)
 	defer barrier.Done()
@@ -56,7 +58,7 @@ func executeStepTemplate(
 	keyFilePath string,
 	ctx nodeContext.NodeContext,
 	barrier *sync.WaitGroup,
-	step *Step,
+	step *roles.Step,
 ) error {
 	tplPath := fmt.Sprintf("%s/%s", viper.GetString("ROOT_PATH"), step.Src)
 
@@ -97,7 +99,7 @@ func executeStepTemplate(
 
 // ExecuteRole Execute the role on the node
 func ExecuteRole(nodes []nodeContext.NodeContext, roleName string) {
-	role, roleFound := RolesSingleton[roleName]
+	role, roleFound := roles.RolesSingleton[roleName]
 	if !roleFound {
 		log.Fatalf("Role %s doesn't exist in roles", roleName)
 	}
@@ -108,7 +110,7 @@ func ExecuteRole(nodes []nodeContext.NodeContext, roleName string) {
 
 	for _, step := range role.Steps {
 		switch step.StepType {
-		case ROLE_TYPE_COPY:
+		case roles.ROLE_TYPE_COPY:
 			log.Infof("Executing step %s: ", step.StepType)
 
 			var wg sync.WaitGroup
@@ -122,7 +124,7 @@ func ExecuteRole(nodes []nodeContext.NodeContext, roleName string) {
 
 			wg.Wait()
 
-		case ROLE_TYPE_SCRIPT:
+		case roles.ROLE_TYPE_SCRIPT:
 			log.Infof("Executing step %s: ", step.StepType)
 
 			var wg sync.WaitGroup
@@ -135,7 +137,7 @@ func ExecuteRole(nodes []nodeContext.NodeContext, roleName string) {
 			}
 
 			wg.Wait()
-		case ROLE_TYPE_TEMPLATE:
+		case roles.ROLE_TYPE_TEMPLATE:
 			log.Infof("Executing step %s: ", step.StepType)
 
 			var wg sync.WaitGroup
@@ -152,4 +154,9 @@ func ExecuteRole(nodes []nodeContext.NodeContext, roleName string) {
 			log.Fatalf("Unexpected step %s", step.StepType)
 		}
 	}
+}
+
+func ParseRoles(path string) error {
+	dat, _ := ioutil.ReadFile(path)
+	return yaml.Unmarshal(dat, &roles.RolesSingleton)
 }

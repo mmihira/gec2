@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gec2/config"
 	"gec2/log"
+	"gec2/roles"
 	"gec2/nodeContext"
 	"gec2/schemaWriter"
 	"github.com/pkg/sftp"
@@ -108,7 +109,7 @@ func CopyFile(client *ssh.Client, fileContents []byte, location string) error {
 }
 
 func RunScripts(
-	scriptPaths []string,
+	scriptPaths []roles.Script,
 	keyFilePath string,
 	ctx nodeContext.NodeContext,
 	barrier *sync.WaitGroup,
@@ -129,7 +130,7 @@ func RunScripts(
 
 	for _, scriptPath := range scriptPaths {
 
-		scriptName := fmt.Sprintf("%s/%s", viper.GetString("ROOT_PATH"), scriptPath)
+		scriptName := fmt.Sprintf("%s/%s", viper.GetString("ROOT_PATH"), scriptPath.FileName())
 
 		fileContents, err := ioutil.ReadFile(scriptName)
 		if err != nil {
@@ -158,8 +159,9 @@ func RunScripts(
 		log.Infof("running script %s for %s", scriptPath, name)
 		runCommand(client, "chmod u+x /tmp/toRun.sh", name)
 		runCommandString := fmt.Sprintf(
-			"GECSECRETS='%s' /tmp/toRun.sh",
+			"GECSECRETS='%s' /tmp/toRun.sh %s",
 			strings.TrimSpace(config.SecretsMapAsJsonString()),
+			scriptPath.Args(),
 		)
 		runCommand(client, runCommandString, name)
 

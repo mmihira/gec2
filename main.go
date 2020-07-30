@@ -12,7 +12,7 @@ import (
 	"gec2/nodeContext"
 	"gec2/opts"
 	"gec2/provision"
-	"gec2/roles"
+	"gec2/roleexecutor"
 	"gec2/schemaWriter"
 	gec2ssh "gec2/ssh"
 	"github.com/sirupsen/logrus"
@@ -46,7 +46,7 @@ func setupRoles() {
 	var err error
 	// Parse the roles
 	rolePath := fmt.Sprintf("%s/%s", viper.GetString("ROLES_PATH"), RoleFileName)
-	roles.ParseRoles(rolePath)
+	roleexecutor.ParseRoles(rolePath)
 	if err != nil {
 		log.Fatalf("Parsing roles got error: %s", err)
 	}
@@ -60,7 +60,7 @@ func main() {
 	}
 
 	log.Setup()
-	log.Info("Running gec2 v1.1.0")
+	log.Info("Running gec2 v1.2.0")
 	// Parse command line options
 	if opts.Opts.Verbose {
 		log.SetLevel(logrus.DebugLevel)
@@ -160,7 +160,7 @@ func main() {
 			log.Info("------------------------------------")
 			log.Infof("----- Executing role %s: ", roleName)
 			log.Info("-----------------------------------")
-			roles.ExecuteRole(runningNodes, roleName)
+			roleexecutor.ExecuteRole(runningNodes, roleName)
 		}
 	}
 

@@ -1,14 +1,30 @@
 package roles
 
 import (
-	"github.com/ghodss/yaml"
-	"io/ioutil"
+	"strings"
 )
+
+type Script string
+
+// Name get the name of a node
+func (s *Script) FileName() string {
+	g := strings.Fields(string(*s))
+	return g[0]
+}
+
+// Name get the name of a node
+func (s *Script) Args() string {
+	g := strings.Fields(string(*s))
+	if len(g) > 1 {
+		return g[1]
+	}
+	return ""
+}
 
 // Step Generic step type
 type Step struct {
 	StepType string   `json:"stepType"`
-	Scripts  []string `json:"scripts"`
+	Scripts  []Script `json:"scripts"`
 	Src      string   `json:"src"`
 	Dst      string   `json:"dst"`
 }
@@ -26,11 +42,6 @@ const (
 	ROLE_TYPE_COPY     = "copy"
 	ROLE_TYPE_TEMPLATE = "template"
 )
-
-func ParseRoles(path string) error {
-	dat, _ := ioutil.ReadFile(path)
-	return yaml.Unmarshal(dat, &RolesSingleton)
-}
 
 // GetConfig Get the config
 func GetRoleInst() (Roles, error) {
