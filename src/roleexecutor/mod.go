@@ -108,6 +108,14 @@ func ExecuteRole(nodes []nodeContext.NodeContext, roleName string) {
 		log.Fatalf("Role %s had no steps - aborting", roleName)
 	}
 
+	if len(role.Before) > 0 {
+		log.Infof("Executing before roles %s", role.Before)
+		for _, roleBefore := range role.Before {
+			ExecuteRole(nodes, roleBefore)
+		}
+	}
+
+	log.Infof("Executing steps")
 	for _, step := range role.Steps {
 		switch step.StepType {
 		case roles.ROLE_TYPE_COPY:

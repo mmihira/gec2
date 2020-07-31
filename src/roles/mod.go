@@ -28,7 +28,8 @@ type Step struct {
 }
 
 type Role struct {
-	Steps []Step `json:"steps"`
+	Before []string `json:"before"`
+	Steps  []Step   `json:"steps"`
 }
 
 type Roles map[string]Role
