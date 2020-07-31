@@ -5,6 +5,7 @@ import (
 	flags "github.com/jessevdk/go-flags"
 	"github.com/spf13/viper"
 	"os"
+	"strings"
 )
 
 // Command line options
@@ -13,25 +14,30 @@ type AppOpt struct {
 	Stages     []string `short:"s" long:"stages" descrption:"Stages to run"`
 	Roles      []string `short:"r" long:"roles" description:"Roles to run"`
 	Nodes      []string `short:"n" long:"nodes" description:"Nodes to run"`
+	Args       []string `short:"a" long:"args" description:"Add additional args to scripts that run"`
 	ConfigPath string   `long:"configpath" description:"Config file path"`
 }
 
 var Opts AppOpt
 
 const (
-	STAGE_PROVISION = "provision"
-	STAGE_SSH       = "ssh"
-	STAGE_CMD       = "cmd"
+	STAGE_PROVISION   = "provision"
+	STAGE_SSH         = "ssh"
+	STAGE_CMD         = "cmd"
 	STAGE_LIST_IMAGES = "listImages"
 )
 
-func DoStageAll () bool {
+func ScriptArgs() string {
+	return strings.Join(Opts.Args, " ")
+}
+
+func DoStageAll() bool {
 	return len(Opts.Stages) == 0
 }
 
 func StageListImages() bool {
 	for _, s := range Opts.Stages {
-		if s ==  STAGE_LIST_IMAGES {
+		if s == STAGE_LIST_IMAGES {
 			return true
 		}
 	}
@@ -49,7 +55,7 @@ func StageProvision() bool {
 
 func StageSSHCheck() bool {
 	for _, s := range Opts.Stages {
-		if s ==  STAGE_SSH {
+		if s == STAGE_SSH {
 			return true
 		}
 	}

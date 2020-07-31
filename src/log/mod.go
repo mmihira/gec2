@@ -53,8 +53,9 @@ var Debugf = log.Debugf
 func Setup() error {
 	log.Out = os.Stdout
 	log.SetFormatter(&logrus.TextFormatter{
-		DisableColors: true,
-		FullTimestamp: true,
+		DisableColors:   true,
+		FullTimestamp:   false,
+		TimestampFormat: time.Kitchen,
 	})
 
 	hook, err := NewFileLogHook()

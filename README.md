@@ -109,6 +109,10 @@ The use of only one key is supported at this time
 - `provision` Provision the nodes don't run any roles
 - `cmd` Run a specific command on a specific node
 
+### `cmd -a`
+
+It's possible to run a script with args passed to the script: `-s cmd -r <role> -a=<args>
+
 ## Tests
 
 Run `go test -v ./...`

@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"gec2/config"
 	"gec2/log"
-	"gec2/roles"
 	"gec2/nodeContext"
+	"gec2/opts"
+	"gec2/roles"
 	"gec2/schemaWriter"
 	"github.com/pkg/sftp"
 	"github.com/sirupsen/logrus"
@@ -159,9 +160,10 @@ func RunScripts(
 		log.Infof("Running script %s for %s", scriptPath, name)
 		runCommand(client, "chmod u+x /tmp/toRun.sh", name)
 		runCommandString := fmt.Sprintf(
-			"GECSECRETS='%s' /tmp/toRun.sh %s",
+			"GECSECRETS='%s' /tmp/toRun.sh %s %s",
 			strings.TrimSpace(config.SecretsMapAsJsonString()),
 			scriptPath.Args(),
+			opts.ScriptArgs(),
 		)
 		runCommand(client, runCommandString, name)
 
