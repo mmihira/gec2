@@ -180,6 +180,49 @@ func RunScripts(
 	return true, nil
 }
 
+func RunCommand(
+	command string,
+	keyFilePath string,
+	ctx nodeContext.NodeContext,
+	barrier *sync.WaitGroup,
+) (bool, error) {
+	name := ctx.Name()
+
+	keyFile, err := KeyFile(keyFilePath)
+	if err != nil {
+		return false, err
+	}
+
+	sshConfig := &ssh.ClientConfig{
+		User:            "ubuntu",
+		Auth:            []ssh.AuthMethod{keyFile},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+		Timeout:         time.Until(time.Now().Add(time.Second * 3)),
+	}
+
+	client, err := ssh.Dial("tcp", fmt.Sprintf(
+		"%s:%s",
+		ctx.PublicIpAddress(),
+		"22",
+	), sshConfig)
+
+	if err != nil {
+		return false, err
+	}
+
+	log.Infof("Running command %s for %s", command, name)
+	runCommandString := fmt.Sprintf(
+		"GECSECRETS='%s' %s %s",
+		strings.TrimSpace(config.SecretsMapAsJsonString()),
+		command,
+		opts.ScriptArgs(),
+	)
+	runCommand(client, runCommandString, name)
+
+	barrier.Done()
+	return true, nil
+}
+
 func CopyFileRemote(
 	fileContents []byte,
 	keyFilePath string,

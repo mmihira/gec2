@@ -25,6 +25,7 @@ type Step struct {
 	Scripts  []Script `json:"scripts"`
 	Src      string   `json:"src"`
 	Dst      string   `json:"dst"`
+	Cmd      string   `json:"cmd"`
 }
 
 type Role struct {
@@ -40,6 +41,7 @@ const (
 	ROLE_TYPE_SCRIPT   = "script"
 	ROLE_TYPE_COPY     = "copy"
 	ROLE_TYPE_TEMPLATE = "template"
+	ROLE_TYPE_COMMAND  = "command"
 )
 
 // GetConfig Get the config
