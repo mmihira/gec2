@@ -21,11 +21,12 @@ func (s *Script) Args() string {
 
 // Step Generic step type
 type Step struct {
-	StepType string   `json:"stepType"`
-	Scripts  []Script `json:"scripts"`
-	Src      string   `json:"src"`
-	Dst      string   `json:"dst"`
-	Cmd      string   `json:"cmd"`
+	StepType   string   `json:"stepType"`
+	Scripts    []Script `json:"scripts"`
+	Src        string   `json:"src"`
+	Dst        string   `json:"dst"`
+	Cmd        string   `json:"cmd"`
+	IgnoreArgs bool     `json:"ignoreArgs"`
 }
 
 type Role struct {

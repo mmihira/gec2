@@ -182,6 +182,7 @@ func RunScripts(
 
 func RunCommand(
 	command string,
+	ignoreArgs bool,
 	keyFilePath string,
 	ctx nodeContext.NodeContext,
 	barrier *sync.WaitGroup,
@@ -211,12 +212,21 @@ func RunCommand(
 	}
 
 	log.Infof("Running command %s for %s", command, name)
-	runCommandString := fmt.Sprintf(
-		"GECSECRETS='%s' %s %s",
-		strings.TrimSpace(config.SecretsMapAsJsonString()),
-		command,
-		opts.ScriptArgs(),
-	)
+	runCommandString := ""
+	if ignoreArgs {
+		runCommandString = fmt.Sprintf(
+			"GECSECRETS='%s' %s",
+			strings.TrimSpace(config.SecretsMapAsJsonString()),
+			command,
+		)
+	} else {
+		runCommandString = fmt.Sprintf(
+			"GECSECRETS='%s' %s %s",
+			strings.TrimSpace(config.SecretsMapAsJsonString()),
+			command,
+			opts.ScriptArgs(),
+		)
+	}
 	runCommand(client, runCommandString, name)
 
 	barrier.Done()

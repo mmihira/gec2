@@ -138,7 +138,7 @@ func ExecuteRole(nodes []nodeContext.NodeContext, roleName string) {
 			for nodeInx, node := range nodes {
 				if node.HasRole(roleName) || opts.HasSpecifiedNode(node.Name()) {
 					wg.Add(1)
-					go gec2ssh.RunCommand(step.Cmd, viper.GetString("SSH_KEY_PATH"), nodes[nodeInx], &wg)
+					go gec2ssh.RunCommand(step.Cmd, step.IgnoreArgs, viper.GetString("SSH_KEY_PATH"), nodes[nodeInx], &wg)
 				}
 			}
 			wg.Wait()
