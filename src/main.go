@@ -1,5 +1,5 @@
 // VIMTRUN#!
-// ROOT_PATH="/home/mihira/c/gec2/deploy_context" LOGS_PATH="/home/mihira/c/gec2/deploy_context/logs" ROLES_PATH="/home/mihira/c/gec2/deploy_context/roles" CREDENTIALS_FILE_PATH="/home/mihira/.ssh/aws-credentials" EC2_REGION="ap-southeast-2" DEPLOY_CONTEXT_PATH="/home/mihira/c/gec2/deploy_context/context" SSH_KEY_PATH=/home/mihira/.ssh/blocksci/blocksci.pem "$GOPATH"/bin/gec2 -v -s cmd -r test-command -n appUi
+// ROOT_PATH="/home/mihira/c/gec2/deploy_context" LOGS_PATH="/home/mihira/c/gec2/deploy_context/logs" ROLES_PATH="/home/mihira/c/gec2/deploy_context/roles" CREDENTIALS_FILE_PATH="/home/mihira/.ssh/aws-credentials" EC2_REGION="ap-southeast-2" DEPLOY_CONTEXT_PATH="/home/mihira/c/gec2/deploy_context/context" SSH_KEY_PATH=/home/mihira/.ssh/blocksci/blocksci.pem "$GOPATH"/bin/gec2 -v -s cmd -r test-command -a="date" -n appUi
 // VIMTRUN#!
 package main
 
@@ -73,7 +73,7 @@ func main() {
 	}
 
 	log.Setup()
-	log.Info("Running gec2 v1.7")
+	log.Info("Running gec2 v1.8")
 	// Parse command line options
 	if opts.Opts.Verbose {
 		log.SetLevel(logrus.DebugLevel)
