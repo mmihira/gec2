@@ -22,6 +22,7 @@ import (
 
 var TMP_SCRIPT_PARENT = "/tmp"
 var TMP_SCRIPT_PATH = fmt.Sprintf("%s/%s", TMP_SCRIPT_PARENT, "toRun.sh")
+var MAX_BUFFER_SIZE = 1024 * 1024 * 10
 
 // runCommand Runs a command and also prints the output to a screen prefixed
 // by the name of the user
@@ -48,7 +49,7 @@ func runCommand(client *ssh.Client, command string, outputPrefix string) error {
 	go func() {
 		scanner := bufio.NewScanner(r)
 		buf := make([]byte, 0, 128*1024)
-		scanner.Buffer(buf, 1024*1024)
+		scanner.Buffer(buf, MAX_BUFFER_SIZE)
 		for scanner.Scan() {
 			log.WithFields(logrus.Fields{
 				"node": outputPrefix,
@@ -68,7 +69,7 @@ func runCommand(client *ssh.Client, command string, outputPrefix string) error {
 	go func() {
 		scanner := bufio.NewScanner(er)
 		buf := make([]byte, 0, 128*1024)
-		scanner.Buffer(buf, 1024*1024)
+		scanner.Buffer(buf, MAX_BUFFER_SIZE)
 		for scanner.Scan() {
 			log.WithFields(logrus.Fields{
 				"node": outputPrefix,
