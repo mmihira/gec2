@@ -13,7 +13,7 @@ require (
 	github.com/pkg/sftp v1.10.0
 	github.com/sirupsen/logrus v1.4.1
 	github.com/spf13/viper v1.3.2
-	golang.org/x/crypto v0.1.0
+	golang.org/x/crypto v0.17.0
 )
 
 go 1.13
